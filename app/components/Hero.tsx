@@ -24,7 +24,7 @@ const RoleRotator = memo(function RoleRotator() {
   }, []);
 
   return (
-    <div className="relative overflow-hidden h-7 px-3 flex items-center border border-electric/30 bg-electric/5 backdrop-blur-sm rounded-sm">
+    <div className="relative overflow-hidden h-7 px-[10px] flex items-center border border-electric/30 bg-electric/5 backdrop-blur-sm rounded-sm">
       <AnimatePresence mode="wait">
         <motion.span
           key={roleIndex}
@@ -89,7 +89,7 @@ export default function Hero() {
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           
           {/* Left Column: Text Content */}
-          <div className="lg:col-span-7 flex flex-col items-start pt-10 lg:pt-0 order-2 lg:order-1">
+          <div className="lg:col-span-7 flex flex-col items-start pt-10 lg:pt-0 order-2 lg:order-1 gap-[13px]">
             
             {/* Animated Role Label */}
             <motion.div
@@ -121,7 +121,7 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="text-ash/90 text-base md:text-lg leading-relaxed max-w-xl mb-8 font-light"
             >
-              I build systems that matter, connecting complex AI infrastructure to user-centric design.
+              I'm Sai Amartya B.L. I build AI systems that matter.
               <br className="mb-4 block" />
             </motion.p>
 
