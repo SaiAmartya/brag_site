@@ -74,6 +74,7 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          image: string | null
           location: string
           organization: string
           period: string
@@ -87,6 +88,7 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
+          image?: string | null
           location: string
           organization: string
           period: string
@@ -100,6 +102,7 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          image?: string | null
           location?: string
           organization?: string
           period?: string

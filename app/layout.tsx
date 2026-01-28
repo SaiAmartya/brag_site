@@ -30,6 +30,9 @@ export const metadata: Metadata = {
     description: "Engineering the Agentic Future",
     type: "website",
   },
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({

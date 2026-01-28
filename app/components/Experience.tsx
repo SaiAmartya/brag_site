@@ -1,79 +1,100 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { MapPin, Calendar } from "lucide-react";
+import Image from "next/image";
 import { Tables } from "@/utils/supabase/database.types";
 
 type Experience = Tables<"experiences">;
 
 export default function Experience({ data }: { data: Experience[] }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const timelineRef = useRef<HTMLDivElement>(null);
+  const targetRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [scrollRange, setScrollRange] = useState(0);
 
+  // Set up scroll progress monitoring for the section
   const { scrollYProgress } = useScroll({
-    target: timelineRef,
-    offset: ["start 80%", "end 20%"],
+    target: targetRef,
+    offset: ["start start", "end end"],
   });
 
-  const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  // Calculate scroll range on mount and resize
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const calculateRange = () => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+        
+        // Calculate the total width of content minus the viewport width
+        const totalWidth = container.scrollWidth;
+        const viewportWidth = window.innerWidth;
+        
+        setScrollRange(totalWidth - viewportWidth);
+      };
+
+      calculateRange();
+      window.addEventListener("resize", calculateRange);
+      return () => window.removeEventListener("resize", calculateRange);
+    }
+  }, [data]);
+
+  // Transform vertical scroll to horizontal translation with buffer
+  const x = useTransform(scrollYProgress, [0.1, 0.9], ["0px", `-${scrollRange}px`]);
 
   if (!data || data.length === 0) return null;
 
   return (
-    <section id="experience" ref={containerRef} className="relative bg-void section">
-      {/* Section Header */}
-      <div className="container-padding max-w-7xl mx-auto pb-24 md:pb-32 border-b border-steel/40">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="max-w-4xl"
-        >
-          <span className="font-mono text-xs text-electric tracking-[0.2em] mb-5 block">
-            03 — EXPERIENCE
-          </span>
-          <h2 className="text-display font-display gradient-text leading-tight whitespace-nowrap">
-            The Operational Track
-          </h2>
-          <p className="text-body-lg text-smoke/80 max-w-2xl leading-relaxed mt-6">
-            From founding startups to leading robotics teams—each role builds
-            the operational muscle required for high-agency execution.
-          </p>
-        </motion.div>
-      </div>
+    <section ref={targetRef} id="experience" className="relative h-[400vh] bg-void py-24 md:py-32">
+      <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
+        
+        {/* Section Header */}
+        <div className="container-padding max-w-7xl mx-auto w-full mb-12 md:mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <span className="font-mono text-xs text-electric tracking-[0.2em] mb-5 block">
+              03 — EXPERIENCE
+            </span>
+            <h2 className="text-display font-display gradient-text leading-tight whitespace-nowrap">
+              Roadmap to Success
+            </h2>
+            <p className="text-body-lg text-smoke/80 max-w-2xl leading-relaxed mt-6">
+              Founding startups to leading robotics teams, each role builds high-agency.
+            </p>
+          </motion.div>
+        </div>
 
-      {/* Timeline */}
-      <div ref={timelineRef} className="relative pt-20 md:pt-32">
-        <div className="container-padding max-w-7xl mx-auto relative">
-          {/* Center Timeline Line - Only visible on md+ */}
-          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 -translate-x-1/2 w-px">
-            <div className="w-full h-full bg-steel/30" />
-            <motion.div
-              className="absolute top-0 left-0 w-full bg-gradient-to-b from-electric via-electric to-electric/50"
-              style={{ height: lineHeight }}
-            />
-          </div>
-
-          {/* Mobile Timeline Line */}
-          <div className="md:hidden absolute left-8 top-0 bottom-0 w-px">
-            <div className="w-full h-full bg-steel/30" />
-            <motion.div
-              className="absolute top-0 left-0 w-full bg-electric"
-              style={{ height: lineHeight }}
-            />
-          </div>
-
-          {/* Experience Cards */}
-          <div className="space-y-16 md:space-y-0">
+        {/* Horizontal Scroll Track */}
+        <div className="w-full relative">
+          <motion.div 
+            ref={scrollContainerRef}
+            style={{ x }}
+            className="flex gap-8 px-8 md:px-20 w-max items-center"
+          >
+            {/* Initial spacer */}
+            <div className="w-[5vw]" />
+            
             {data.map((exp, index) => (
-              <ExperienceCard
-                key={exp.id}
-                experience={exp}
-                isLeft={index % 2 === 0}
-              />
+              <ExperienceCard key={exp.id} experience={exp} />
             ))}
+            
+            {/* Trailing spacer */}
+            <div className="w-[5vw]" />
+          </motion.div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <div 
+          className="container-padding max-w-7xl mx-auto w-full mt-12 md:mt-16"
+        >
+          <div className="flex items-center gap-4">
+            <span className="font-mono text-[11px] text-ash/70 tracking-wide">SCROLL TO EXPLORE</span>
+            <div className="flex-1 h-px bg-steel/30" />
+            <span className="font-mono text-[11px] text-ash/70 tracking-wide">{data.length} ROLES</span>
           </div>
         </div>
       </div>
@@ -81,147 +102,92 @@ export default function Experience({ data }: { data: Experience[] }) {
   );
 }
 
-interface ExperienceCardProps {
-  experience: Experience;
-  isLeft: boolean;
-}
+function ExperienceCard({ experience }: { experience: Experience }) {
+  const imageSrc = experience.image && experience.image.trim() !== "" 
+    ? (experience.image.startsWith("http") || experience.image.startsWith("/") ? experience.image : `/${experience.image}`)
+    : "/tech_portfolio_hero_abstract_3d_index_0@4096x2286.jpeg";
 
-function ExperienceCard({ experience, isLeft }: ExperienceCardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.6, delay: 0.1 }}
-      className="relative md:py-12"
+    <div
+      className="group relative flex-shrink-0 w-[400px] md:w-[500px] h-[500px] rounded-lg overflow-hidden border border-steel/30 bg-void"
     >
-      {/* Desktop Layout */}
-      <div className="hidden md:grid md:grid-cols-[1fr_auto_1fr] gap-8 lg:gap-16 items-center">
-        {/* Left Content / Spacer */}
-        {isLeft ? (
-          <div className="flex justify-end relative">
-            <CardContent experience={experience} alignment="right" />
-            {/* Connecting Line (Right) */}
-            <div className="absolute top-1/2 -right-8 lg:-right-16 w-8 lg:w-16 h-px bg-steel/30" />
-          </div>
-        ) : (
-          <div /> // Spacer
-        )}
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-void z-10 opacity-70 group-hover:opacity-50 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent z-10" />
+        <Image
+          src={imageSrc}
+          alt={experience.role}
+          fill
+          sizes="(max-width: 768px) 80vw, 500px"
+          className="object-cover transform scale-100 group-hover:scale-105 transition-transform duration-700 grayscale group-hover:grayscale-0"
+          unoptimized={!imageSrc.startsWith("/")}
+        />
+      </div>
 
-        {/* Center Timeline Node - Perfectly Centered */}
-        <div className="relative flex items-center justify-center w-4 h-4 z-10">
-          <div 
-            className={`w-4 h-4 rounded-full border-2 transition-all duration-300 ${
+      {/* Content Overlay */}
+      <div className="relative z-20 h-full flex flex-col justify-end p-8 md:p-10">
+        {/* Top Badges */}
+        <div className="absolute top-8 right-8 flex gap-3">
+          <span 
+            className={`inline-flex items-center px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider rounded backdrop-blur-md ${
               experience.active 
-                ? "bg-electric border-electric shadow-[0_0_12px_rgba(0,113,227,0.5)] scale-125" 
-                : "bg-carbon border-steel/60"
+                ? "bg-electric/20 text-electric border border-electric/30" 
+                : "bg-steel/40 text-ash border border-steel/30"
             }`}
-          />
+          >
+            {experience.type}
+          </span>
+          {experience.active && (
+            <span className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider rounded bg-matrix/20 text-matrix border border-matrix/30 backdrop-blur-md">
+              <span className="w-1.5 h-1.5 bg-matrix rounded-full animate-pulse" />
+              ACTIVE
+            </span>
+          )}
         </div>
 
-        {/* Right Content / Spacer */}
-        {!isLeft ? (
-          <div className="flex justify-start relative">
-            <div className="absolute top-1/2 -left-8 lg:-left-16 w-8 lg:w-16 h-px bg-steel/30" />
-            <CardContent experience={experience} alignment="left" />
+        {/* Text Content */}
+        <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+          {/* Role */}
+          <h3 className="text-2xl md:text-3xl font-display text-bone mb-2 leading-tight group-hover:text-electric transition-colors">
+            {experience.role}
+          </h3>
+          
+          {/* Organization */}
+          <p className="font-mono text-sm text-smoke mb-6">
+            {experience.organization}
+          </p>
+
+          {/* Meta: Date & Location */}
+          <div className="flex items-center gap-5 mb-6 text-ash/70">
+            <span className="flex items-center gap-1.5 text-xs">
+              <Calendar className="w-3.5 h-3.5" />
+              {experience.period}
+            </span>
+            <span className="flex items-center gap-1.5 text-xs">
+              <MapPin className="w-3.5 h-3.5" />
+              {experience.location}
+            </span>
           </div>
-        ) : (
-          <div /> // Spacer
-        )}
+
+          {/* Description */}
+          <p className="text-sm text-smoke/90 mb-8 leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all duration-300">
+            {experience.description}
+          </p>
+
+          {/* Skills */}
+          <div className="flex flex-wrap gap-2">
+            {experience.skills.map((skill) => (
+              <span 
+                key={skill} 
+                className="px-2.5 py-1 text-[10px] font-mono text-bone/70 uppercase tracking-wide border border-white/10 rounded bg-white/5"
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
-
-      {/* Mobile Layout */}
-      <div className="md:hidden relative pl-12">
-        {/* Timeline Node */}
-        <div 
-          className={`absolute left-8 top-8 -translate-x-1/2 w-3 h-3 rounded-full border-2 z-10 ${
-            experience.active 
-              ? "bg-electric border-electric" 
-              : "bg-carbon border-steel/60"
-          }`}
-        />
-        {/* Mobile Connector */}
-        <div className="absolute left-8 top-[38px] w-4 h-px bg-steel/30" />
-        
-        <CardContent experience={experience} alignment="left" />
-      </div>
-    </motion.div>
-  );
-}
-
-interface CardContentProps {
-  experience: Experience;
-  alignment: "left" | "right";
-}
-
-function CardContent({ experience, alignment }: CardContentProps) {
-  const isRight = alignment === "right";
-  
-  return (
-    <motion.div
-      whileHover={{ y: -5 }}
-      transition={{ duration: 0.3 }}
-      className={`w-full max-w-lg bg-carbon/60 backdrop-blur-md border border-steel/40 hover:border-electric/30 rounded-lg p-8 md:p-10 transition-all duration-300 group ${
-        isRight ? "text-right" : "text-left"
-      }`}
-    >
-      {/* Top row: Type badge + Active status */}
-      <div className={`flex items-center gap-3 mb-6 ${isRight ? "flex-row-reverse" : ""}`}>
-        <span 
-          className={`inline-flex items-center px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider rounded ${
-            experience.active 
-              ? "bg-electric/10 text-electric border border-electric/30" 
-              : "bg-steel/20 text-ash border border-steel/30"
-          }`}
-        >
-          {experience.type}
-        </span>
-        {experience.active && (
-          <span className="flex items-center gap-1.5 text-[10px] font-mono text-matrix tracking-wider">
-            <span className="w-1.5 h-1.5 bg-matrix rounded-full animate-pulse" />
-            ACTIVE
-          </span>
-        )}
-      </div>
-
-      {/* Role */}
-      <h3 className="text-xl md:text-2xl font-display text-bone mb-2 leading-tight group-hover:text-electric transition-colors">
-        {experience.role}
-      </h3>
-      
-      {/* Organization */}
-      <p className="font-mono text-sm text-smoke mb-5">
-        {experience.organization}
-      </p>
-
-      {/* Meta: Date & Location */}
-      <div className={`flex items-center gap-5 mb-6 text-ash/70 ${isRight ? "justify-end" : ""}`}>
-        <span className="flex items-center gap-1.5 text-xs">
-          <Calendar className="w-3.5 h-3.5" />
-          {experience.period}
-        </span>
-        <span className="flex items-center gap-1.5 text-xs">
-          <MapPin className="w-3.5 h-3.5" />
-          {experience.location}
-        </span>
-      </div>
-
-      {/* Description */}
-      <p className="text-sm text-smoke/90 mb-8 leading-relaxed">
-        {experience.description}
-      </p>
-
-      {/* Skills */}
-      <div className={`flex flex-wrap gap-2 ${isRight ? "justify-end" : ""}`}>
-        {experience.skills.map((skill) => (
-          <span 
-            key={skill} 
-            className="px-2.5 py-1 text-[10px] font-mono text-ash/80 uppercase tracking-wide border border-steel/30 rounded bg-steel/5"
-          >
-            {skill}
-          </span>
-        ))}
-      </div>
-    </motion.div>
+    </div>
   );
 }

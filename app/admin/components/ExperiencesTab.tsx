@@ -5,6 +5,8 @@ import { createClient } from "@/utils/supabase/client";
 import { Tables, TablesInsert, TablesUpdate } from "@/utils/supabase/database.types";
 import { Plus, Pencil, Trash2, X, Save, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import Image from "next/image";
+import ImageUpload from "./ImageUpload";
 
 type Experience = Tables<"experiences">;
 type ExperienceInsert = TablesInsert<"experiences">;
@@ -37,6 +39,7 @@ export default function ExperiencesTab({ initialData }: { initialData: Experienc
       description: "",
       skills: [],
       active: false,
+      image: "",
     });
     setEditingId(null);
     setIsModalOpen(true);
@@ -109,12 +112,25 @@ export default function ExperiencesTab({ initialData }: { initialData: Experienc
             key={item.id}
             className="bg-void border border-steel/40 p-4 rounded-lg flex justify-between items-center group hover:border-steel transition-colors"
           >
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-bone font-bold">{item.role}</h3>
-                {item.active && <span className="text-[10px] bg-matrix/20 text-matrix px-1.5 py-0.5 rounded border border-matrix/30">ACTIVE</span>}
+            <div className="flex gap-4 items-center">
+              {item.image && (
+                 <div className="relative w-12 h-12 rounded bg-steel/20 overflow-hidden shrink-0">
+                  <Image
+                    src={item.image.startsWith('http') ? item.image : `/${item.image}`}
+                    alt={item.role}
+                    fill
+                    className="object-cover"
+                    unoptimized={!item.image.startsWith("http")}
+                  />
+                 </div>
+              )}
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-bone font-bold">{item.role}</h3>
+                  {item.active && <span className="text-[10px] bg-matrix/20 text-matrix px-1.5 py-0.5 rounded border border-matrix/30">ACTIVE</span>}
+                </div>
+                <p className="text-ash text-xs font-mono">{item.organization} • {item.period}</p>
               </div>
-              <p className="text-ash text-xs font-mono">{item.organization} • {item.period}</p>
             </div>
             <div className="flex gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
               <button
@@ -158,6 +174,13 @@ export default function ExperiencesTab({ initialData }: { initialData: Experienc
                   {error}
                 </div>
               )}
+
+              <div className="space-y-2">
+                <ImageUpload 
+                  value={formData.image} 
+                  onChange={(url) => setFormData({ ...formData, image: url })} 
+                />
+              </div>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">

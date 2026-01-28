@@ -35,7 +35,7 @@ export default function Achievements({ data }: { data: Achievement[] }) {
   return (
     <section id="achievements" ref={containerRef} className="relative bg-carbon section">
       {/* Section Header */}
-      <div className="container-padding max-w-7xl mx-auto pb-24 md:pb-32 border-b border-steel/40">
+      <div className="container-padding max-w-7xl mx-auto pb-24 md:pb-30 border-b border-steel/40">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -47,11 +47,8 @@ export default function Achievements({ data }: { data: Achievement[] }) {
             02 — COMPETITIVE RIGOR
           </span>
           <h2 className="text-display font-display gradient-text mb-6">
-            Proof of Work
+            Some Stats
           </h2>
-          <p className="text-body-lg text-smoke/80 max-w-2xl leading-relaxed">
-            Mathematical precision meets software engineering.
-          </p>
         </motion.div>
       </div>
 

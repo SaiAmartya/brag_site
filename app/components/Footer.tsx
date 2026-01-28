@@ -35,24 +35,21 @@ export default function Footer() {
   return (
     <footer className="relative bg-void border-t border-steel/40">
       {/* Main CTA Section - Better spacing */}
-      <div className="px-8 md:px-16 lg:px-20 max-w-7xl mx-auto py-24 md:py-32">
+      <div className="px-8 md:px-16 lg:px-20 max-w-7xl mx-auto py-20 md:py-32">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="max-w-4xl"
+          className="w-full"
         >
-          <span className="font-mono text-xs text-electric tracking-[0.2em] mb-5 block">
-            LET&apos;S BUILD TOGETHER
-          </span>
-          <h2 className="text-display font-display text-bone mb-10 leading-tight">
-            Ready to engineer
-            <br />
-            <span className="gradient-electric">the future?</span>
-          </h2>
-          
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8 py-8">
+            <h2 className="text-display font-display text-bone leading-tight">
+              Ready to engineer
+              <br />
+              <span className="gradient-electric">the future?</span>
+            </h2>
+            
             <a
               href="mailto:saiamartya19@gmail.com"
               className="btn btn-primary group"
@@ -60,22 +57,14 @@ export default function Footer() {
               GET IN TOUCH
               <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </a>
-            <a
-              href="https://saiamartya.vercel.app/home"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-outline"
-            >
-              VIEW FULL SITE
-            </a>
           </div>
         </motion.div>
       </div>
 
       {/* Links Grid - Better spacing */}
       <div className="border-t border-steel/30">
-        <div className="px-8 md:px-16 lg:px-20 max-w-7xl mx-auto py-16 md:py-20">
-          <div className="grid md:grid-cols-3 gap-12 md:gap-16">
+        <div className="px-8 md:px-16 lg:px-20 max-w-7xl mx-auto py-16 md:py-24">
+          <div className="grid md:grid-cols-3 gap-16 md:gap-24">
             {/* Contact Links */}
             <div>
               <span className="font-mono text-[10px] text-ash/70 mb-6 block tracking-wider uppercase">
@@ -120,9 +109,6 @@ export default function Footer() {
 
             {/* Current Status */}
             <div>
-              <span className="font-mono text-[10px] text-ash/70 mb-6 block tracking-wider uppercase">
-                STATUS
-              </span>
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 bg-matrix rounded-full animate-pulse" />

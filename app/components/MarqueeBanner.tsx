@@ -4,14 +4,12 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 
 const marqueeItems = [
-  "SYSTEMS BUILDER",
-  "TECHNICAL FOUNDER",
-  "AI INFRASTRUCTURE",
-  "HIGH AGENCY",
-  "COMPETITIVE RIGOR",
-  "OPERATIONAL EXCELLENCE",
-  "AGENTIC FUTURE",
-  "FULL-STACK OWNERSHIP",
+  "TECHNICAL FOUNDER-",
+  "AGENTIC FUTURE-",
+  "HIGH AGENCY-",
+  "COMPETITIVE RIGOR-",
+  "OPERATIONAL EXCELLENCE-",
+  "FULL-STACK OWNERSHIP-",
 ];
 
 export default function MarqueeBanner() {

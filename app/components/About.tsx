@@ -29,7 +29,7 @@ export default function About() {
         <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
           {/* Background with subtle parallax */}
           <motion.div 
-            className="absolute inset-0 opacity-[0.07] relative"
+            className="absolute inset-0 opacity-[0.07]"
             style={{ y: bgY }}
           >
             <Image
@@ -58,7 +58,7 @@ export default function About() {
             </motion.span>
             
             <p className="text-[clamp(1.5rem,4vw,3.5rem)] font-display text-bone leading-[1.2] tracking-tight">
-              I do not build apps; I engineer{" "}
+              I engineer{" "}
               <span className="relative inline-block">
                 <span className="gradient-electric">systems</span>
                 <motion.span 
@@ -69,10 +69,8 @@ export default function About() {
                   transition={{ duration: 1, delay: 0.5 }}
                 />
               </span>
-              . From the abstract beauty of competitive mathematics to the practical 
-              complexity of AI-driven operating environments, my work is a pursuit of{" "}
-              <span className="gradient-electric">high agency</span> and{" "}
-              <span className="gradient-electric">technical sovereignty</span>.
+              . From competitive mathematics to AI-driven operating environments, my work is a pursuit of{" "}
+              <span className="gradient-electric">high agency.</span>
             </p>
 
             {/* Decorative elements */}

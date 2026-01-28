@@ -98,7 +98,7 @@ export default function VenturesTab({ initialData }: { initialData: Venture[] })
   };
 
   return (
-    <div>
+    <div className="py-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-display text-bone">Manage Ventures</h2>
         <button onClick={handleAdd} className="btn btn-primary text-xs py-2 px-4">

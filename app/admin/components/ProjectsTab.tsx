@@ -6,6 +6,7 @@ import { Tables, TablesInsert, TablesUpdate } from "@/utils/supabase/database.ty
 import { Plus, Pencil, Trash2, X, Save, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import ImageUpload from "./ImageUpload";
 
 type Project = Tables<"projects">;
 type ProjectInsert = TablesInsert<"projects">;
@@ -249,12 +250,9 @@ export default function ProjectsTab({ initialData }: { initialData: Project[] })
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-mono text-ash uppercase">Image URL</label>
-                <input
-                  type="text"
-                  value={formData.image || ""}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="w-full bg-void border border-steel rounded p-2 text-bone focus:border-electric outline-none"
+                <ImageUpload 
+                  value={formData.image} 
+                  onChange={(url) => setFormData({ ...formData, image: url })} 
                 />
               </div>
 

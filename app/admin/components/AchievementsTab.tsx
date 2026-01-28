@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Tables, TablesInsert, TablesUpdate } from "@/utils/supabase/database.types";
-import { Plus, Pencil, Trash2, X, Save, AlertCircle } from "lucide-react";
-import { motion } from "framer-motion";
+import { Plus, Pencil, Trash2, X, Save, AlertCircle, GripVertical } from "lucide-react";
+import { motion, Reorder } from "framer-motion";
 
 type Achievement = Tables<"achievements">;
 type AchievementInsert = TablesInsert<"achievements">;
@@ -17,8 +17,39 @@ export default function AchievementsTab({ initialData }: { initialData: Achievem
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [hasOrderChanged, setHasOrderChanged] = useState(false);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
 
   const supabase = createClient();
+
+  const handleReorder = (newOrder: Achievement[]) => {
+    setData(newOrder);
+    setHasOrderChanged(true);
+  };
+
+  const saveOrder = async () => {
+    setIsSavingOrder(true);
+    setError(null);
+    try {
+      const updates = data.map((item, index) => ({
+        id: item.id,
+        sort_order: index,
+      }));
+
+      await Promise.all(
+        updates.map((update) =>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          supabase.from("achievements").update({ sort_order: update.sort_order } as any).eq("id", update.id)
+        )
+      );
+      setHasOrderChanged(false);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error saving order";
+      setError(message);
+    } finally {
+      setIsSavingOrder(false);
+    }
+  };
 
   const handleEdit = (item: Achievement) => {
     setFormData(item);
@@ -98,23 +129,51 @@ export default function AchievementsTab({ initialData }: { initialData: Achievem
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-display text-bone">Manage Achievements</h2>
-        <button onClick={handleAdd} className="btn btn-primary text-xs py-2 px-4">
-          <Plus className="w-4 h-4" /> Add Achievement
-        </button>
+        <div className="flex gap-2">
+          {hasOrderChanged && (
+            <button
+              onClick={saveOrder}
+              disabled={isSavingOrder}
+              className="btn bg-electric/10 text-electric border border-electric/20 hover:bg-electric/20 text-xs py-2 px-4 transition-colors flex items-center"
+            >
+              {isSavingOrder ? (
+                <span className="animate-spin mr-2">⟳</span>
+              ) : (
+                <Save className="w-4 h-4 mr-2" />
+              )}
+              Save Order
+            </button>
+          )}
+          <button onClick={handleAdd} className="btn btn-primary text-xs py-2 px-4">
+            <Plus className="w-4 h-4" /> Add Achievement
+          </button>
+        </div>
       </div>
 
-      <div className="grid gap-4">
+      <Reorder.Group axis="y" values={data} onReorder={handleReorder} className="space-y-4">
         {data.map((item) => (
-          <div
+          <Reorder.Item
             key={item.id}
+            value={item}
             className="bg-void border border-steel/40 p-4 rounded-lg flex justify-between items-center group hover:border-steel transition-colors"
           >
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-bone font-bold">{item.title}</h3>
-                {item.highlight && <span className="text-[10px] bg-electric/20 text-electric px-1.5 py-0.5 rounded border border-electric/30">HIGHLIGHT</span>}
+            <div className="flex items-center gap-4">
+              <div className="cursor-grab active:cursor-grabbing text-ash/30 hover:text-ash/60 transition-colors">
+                <GripVertical className="w-5 h-5" />
               </div>
-              <p className="text-ash text-xs font-mono">{item.category} • {item.value}</p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-bone font-bold">{item.title}</h3>
+                  {item.highlight && (
+                    <span className="text-[10px] bg-electric/20 text-electric px-1.5 py-0.5 rounded border border-electric/30">
+                      HIGHLIGHT
+                    </span>
+                  )}
+                </div>
+                <p className="text-ash text-xs font-mono">
+                  {item.category} • {item.value}
+                </p>
+              </div>
             </div>
             <div className="flex gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
               <button
@@ -130,9 +189,9 @@ export default function AchievementsTab({ initialData }: { initialData: Achievem
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
-          </div>
+          </Reorder.Item>
         ))}
-      </div>
+      </Reorder.Group>
 
       {/* Modal */}
       {isModalOpen && (

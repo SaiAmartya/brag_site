@@ -16,10 +16,10 @@ export default function Ventures({ data }: { data: Venture[] }) {
   const isCompact = normalizedData.length <= 2;
 
   return (
-    <section id="ventures" className="relative bg-void py-24 md:py-32">
+    <section id="ventures" className="relative bg-void pt-32 pb-20 md:py-48">
       <div className="container-padding horizontal-ventures-container">
         <motion.div 
-          className="mb-14 md:mb-20 max-w-3xl pt-0 pb-0"
+          className="mb-8 md:mb-20 max-w-3xl pt-0 pb-0"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -29,7 +29,7 @@ export default function Ventures({ data }: { data: Venture[] }) {
             01 — VENTURES
           </span>
           <h2 className="text-title font-display text-bone mb-4">
-            The Foundational Layer
+            Founder's Hub
           </h2>
           <p className="text-body-lg text-smoke/80">
             Active startups building the substrate for an agentic future.
@@ -87,7 +87,7 @@ function VentureCard({
   return (
     <motion.div
       className={`relative ${
-        isCompact ? "h-[520px]" : "w-[88vw] md:w-[70vw] lg:w-[55vw] h-[70vh] max-h-[700px]"
+        isCompact ? "h-[520px]" : "w-[88vw] md:w-[70vw] lg:w-[55vw] h-[65vh] min-h-[500px] max-h-[700px]"
       } flex-shrink-0 group rounded-lg overflow-hidden border border-steel/30 bg-void`}
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -108,17 +108,17 @@ function VentureCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/20" />
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 lg:p-16">
+      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 lg:p-16">
         <span className="font-mono text-xs tracking-widest mb-4 block" style={{ color: venture.color || '#fff' }}>
           {venture.tagline}
         </span>
         <h3 className="text-display font-display text-bone mb-4">
           {venture.name}
         </h3>
-        <p className="text-body-lg text-smoke/90 max-w-lg mb-8">
+        <p className="text-body-lg text-smoke/90 max-w-lg mb-6 md:mb-8">
           {venture.description}
         </p>
-        <div className="flex flex-wrap gap-8 md:gap-12 mb-8">
+        <div className="flex flex-wrap gap-6 md:gap-12 mb-6 md:mb-8">
           {venture.metrics && typeof venture.metrics === "object" &&
             Object.entries(venture.metrics as Record<string, string>).map(([key, value]) => (
               <div key={key} className="min-w-[100px]">
