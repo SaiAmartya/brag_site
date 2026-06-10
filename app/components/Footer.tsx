@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ArrowUpRight, Mail, Linkedin, Github } from "lucide-react";
+import Clouds from "./Clouds";
 
 const links = [
   {
@@ -26,61 +27,58 @@ const links = [
 
 const quickLinks = [
   { name: "Ventures", href: "#ventures" },
-  { name: "Achievements", href: "#achievements" },
+  { name: "Wins", href: "#achievements" },
   { name: "Experience", href: "#experience" },
   { name: "Projects", href: "#projects" },
 ];
 
+const ease = [0.16, 1, 0.3, 1] as const;
+
 export default function Footer() {
   return (
-    <footer className="relative bg-void border-t border-steel/40">
-      {/* Main CTA Section - Better spacing */}
-      <div className="px-8 md:px-16 lg:px-20 max-w-7xl mx-auto py-20 md:py-32">
+    <footer className="relative overflow-hidden pt-28 md:pt-36">
+      <Clouds variant="soft" />
+      <div className="sun-glow w-[55vw] h-[55vw] -bottom-[30vw] left-1/2 -translate-x-1/2" />
+
+      {/* Big CTA */}
+      <div className="container-padding max-w-5xl mx-auto relative z-10 text-center mb-20 md:mb-28">
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 36 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="w-full"
+          transition={{ duration: 0.8, ease }}
         >
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 py-8">
-            <h2 className="text-display font-display text-bone leading-tight">
-              Ready to engineer
-              <br />
-              <span className="gradient-electric">the future?</span>
-            </h2>
-            
-            <a
-              href="mailto:saiamartya19@gmail.com"
-              className="btn btn-primary group"
-            >
-              GET IN TOUCH
-              <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </a>
-          </div>
+          <span className="section-label mb-6 inline-flex">Get in touch</span>
+          <h2 className="font-display text-display text-ink mb-8 max-w-3xl mx-auto">
+            Let&apos;s build something{" "}
+            <span className="accent-italic">worth bragging about.</span>
+          </h2>
+          <a href="mailto:saiamartya19@gmail.com" className="btn btn-sunrise text-base !px-8 !py-4 group">
+            Say hello
+            <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </a>
         </motion.div>
       </div>
 
-      {/* Links Grid - Better spacing */}
-      <div className="border-t border-steel/30">
-        <div className="px-8 md:px-16 lg:px-20 max-w-7xl mx-auto py-16 md:py-24">
-          <div className="grid md:grid-cols-3 gap-16 md:gap-24">
-            {/* Contact Links */}
+      {/* Links card */}
+      <div className="container-padding max-w-6xl mx-auto relative z-10 pb-10">
+        <div className="glass-strong rounded-[2rem] p-8 md:p-12">
+          <div className="grid md:grid-cols-3 gap-10 md:gap-12">
             <div>
-              <span className="font-mono text-[10px] text-ash/70 mb-6 block tracking-wider uppercase">
-                CONNECT
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-marmalade mb-5 block">
+                Connect
               </span>
-              <ul className="space-y-4">
+              <ul className="space-y-3">
                 {links.map((link) => (
                   <li key={link.name}>
                     <a
                       href={link.href}
                       target={link.href.startsWith("http") ? "_blank" : undefined}
                       rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                      className="flex items-center gap-3 text-smoke/80 hover:text-white transition-colors group"
+                      className="flex items-center gap-2.5 text-cocoa hover:text-marmalade transition-colors group"
                     >
-                      <link.icon className="w-4 h-4 opacity-60" />
-                      <span className="font-mono text-sm">{link.value}</span>
+                      <link.icon className="w-4 h-4 text-taupe group-hover:text-tangerine transition-colors" />
+                      <span className="text-sm font-medium">{link.value}</span>
                       <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </a>
                   </li>
@@ -88,17 +86,16 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* Quick Links */}
             <div>
-              <span className="font-mono text-[10px] text-ash/70 mb-6 block tracking-wider uppercase">
-                NAVIGATION
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-marmalade mb-5 block">
+                Explore
               </span>
-              <ul className="space-y-4">
+              <ul className="space-y-3">
                 {quickLinks.map((link) => (
                   <li key={link.name}>
                     <a
                       href={link.href}
-                      className="font-mono text-sm text-smoke/80 hover:text-white transition-colors"
+                      className="text-sm font-medium text-cocoa hover:text-marmalade transition-colors"
                     >
                       {link.name}
                     </a>
@@ -107,53 +104,32 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* Current Status */}
             <div>
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-matrix rounded-full animate-pulse" />
-                  <span className="font-mono text-xs text-matrix tracking-wide">
-                    AVAILABLE FOR OPPORTUNITIES
-                  </span>
-                </div>
-                <p className="text-sm text-smoke/70 leading-relaxed">
-                  Kitchener, Ontario
-                  <br />
-                  IB Student @ Cameron Heights C.I.
-                </p>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="w-2 h-2 bg-leaf rounded-full animate-pulse-dot" />
+                <span className="text-xs font-mono uppercase tracking-[0.15em] text-leaf">
+                  Open to opportunities
+                </span>
               </div>
+              <p className="text-sm text-cocoa leading-relaxed">
+                Kitchener, Ontario
+                <br />
+                IB Student @ Cameron Heights C.I.
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Bar - Better spacing */}
-      <div className="border-t border-steel/30">
-        <div className="px-8 md:px-16 lg:px-20 max-w-7xl mx-auto py-6 md:py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <span className="font-mono text-[11px] text-ash/60">
-              © 2026 SAI AMARTYA B.L.
-            </span>
-            <span className="hidden md:block w-px h-3 bg-steel/40" />
-            <span className="font-mono text-[11px] text-ash/60">
-              ALL RIGHTS RESERVED
-            </span>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <span className="font-mono text-[11px] text-ash/60">
-              BUILT WITH NEXT.JS
-            </span>
-            <span className="w-px h-3 bg-steel/40" />
-            <span className="font-mono text-[11px] text-electric/80">
-              v2026.01
-            </span>
-          </div>
-        </div>
+      {/* Bottom bar */}
+      <div className="container-padding max-w-6xl mx-auto relative z-10 py-7 flex flex-col md:flex-row items-center justify-between gap-3">
+        <span className="text-xs text-taupe font-mono">
+          © 2026 Sai Amartya B.L. All rights reserved.
+        </span>
+        <span className="text-xs text-taupe font-mono flex items-center gap-2">
+          Built with Next.js <span className="text-honey">✦</span> v2026.06
+        </span>
       </div>
-
-      {/* Corner Accents - More subtle */}
-      <div className="absolute top-8 right-8 md:right-16 corner-accent bottom-right opacity-30" />
     </footer>
   );
 }

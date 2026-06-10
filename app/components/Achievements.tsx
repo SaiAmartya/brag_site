@@ -1,174 +1,191 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useRef } from "react";
-import { Trophy, Award, Star, Medal, Target, Zap, Crown, Flame, Rocket } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { motion, animate, useInView } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { Tables } from "@/utils/supabase/database.types";
 
 type Achievement = Tables<"achievements">;
 
-const iconMap: Record<string, LucideIcon> = {
-  Trophy,
-  Award,
-  Star,
-  Medal,
-  Target,
-  Zap,
-  Crown,
-  Flame,
-  Rocket
-};
-
-const stats = [
-  { label: "Competition Rank", value: "Top 1%", sublabel: "School-wide" },
-  { label: "Academic Average", value: "98", sublabel: "IB Program" },
-  { label: "Contests Participated", value: "10+", sublabel: "Math & CS" },
-  { label: "Awards Received", value: "5+", sublabel: "Distinctions" },
+const counters = [
+  { to: 98, suffix: "/100", label: "IB average" },
+  { to: 1, prefix: "Top ", suffix: "%", label: "school-wide rank" },
+  { to: 200, suffix: "+", label: "users shipped to" },
+  { to: 25, suffix: "M+", label: "organic impressions" },
 ];
 
-export default function Achievements({ data }: { data: Achievement[] }) {
-  const containerRef = useRef<HTMLDivElement>(null);
+const ease = [0.16, 1, 0.3, 1] as const;
 
+export default function Achievements({ data }: { data: Achievement[] }) {
   if (!data || data.length === 0) return null;
 
+  // Group by category, preserving sort order of first appearance
+  const groups: { category: string; items: Achievement[] }[] = [];
+  for (const item of data) {
+    const group = groups.find((g) => g.category === item.category);
+    if (group) group.items.push(item);
+    else groups.push({ category: item.category, items: [item] });
+  }
+
   return (
-    <section id="achievements" ref={containerRef} className="relative bg-carbon section">
-      {/* Section Header */}
-      <div className="container-padding max-w-7xl mx-auto pb-24 md:pb-30 border-b border-steel/40">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className=""
-        >
-          <span className="font-mono text-xs text-electric tracking-[0.2em] mb-5 block">
-            02 — COMPETITIVE RIGOR
-          </span>
-          <h2 className="text-display font-display gradient-text mb-6">
-            Some Stats
-          </h2>
-        </motion.div>
-      </div>
+    <section id="achievements" className="relative section overflow-hidden">
+      <div className="sun-glow w-[46vw] h-[46vw] top-[8%] -left-[20vw] opacity-75" />
+      <div className="sun-glow w-[32vw] h-[32vw] bottom-[10%] -right-[14vw] opacity-65" />
+      <div className="cloud cloud-lilac animate-drift-b w-[34vw] h-[24vw] top-[5%] -right-[10vw] opacity-55" />
+      <div className="cloud cloud-rose animate-drift-c w-[28vw] h-[20vw] bottom-[20%] -left-[8vw] opacity-50" />
 
-      {/* Stats Bar */}
-      <div className="border-b border-steel/40 bg-void/30">
-        <div className="container-padding max-w-7xl mx-auto py-[70px] text-left">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 lg:gap-16">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="text-left"
-              >
-                <span className="font-mono text-[10px] text-ash/70 block mb-3 tracking-wider uppercase">
-                  {stat.label}
-                </span>
-                <span className="font-display text-4xl md:text-5xl lg:text-6xl text-bone block mb-2 leading-none">
-                  {stat.value}
-                </span>
-                <span className="font-mono text-xs text-smoke/60 tracking-wide">
-                  {stat.sublabel}
-                </span>
-              </motion.div>
-            ))}
+      <div className="container-padding max-w-6xl mx-auto relative z-10">
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+          {/* Left: sticky header + animated counters */}
+          <div className="lg:col-span-5 lg:sticky lg:top-28">
+            <motion.div
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, ease }}
+            >
+              <span className="section-label mb-5 inline-flex">Proof of work</span>
+              <h2 className="font-display text-display text-ink mb-5">
+                The receipts, <span className="accent-italic">in writing.</span>
+              </h2>
+              <p className="text-body-lg text-cocoa mb-10 max-w-md">
+                Every line item earned, none of it inherited. Keep the paper.
+                You&apos;ll want it later.
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-2 gap-x-8 gap-y-8">
+              {counters.map((counter, index) => (
+                <motion.div
+                  key={counter.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, ease, delay: index * 0.08 }}
+                >
+                  <span className="font-display text-4xl md:text-5xl text-tangerine block leading-none mb-2">
+                    <CountUp to={counter.to} prefix={counter.prefix} suffix={counter.suffix} />
+                  </span>
+                  <span className="text-sm font-medium text-cocoa">
+                    {counter.label}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Bento Grid */}
-      <div className="container-padding max-w-7xl mx-auto py-[70px] text-left">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {data.map((achievement, index) => (
-            <AchievementCard
-              key={achievement.id}
-              achievement={achievement}
-              index={index}
-            />
-          ))}
+          {/* Right: the receipt */}
+          <motion.div
+            initial={{ opacity: 0, y: 64, rotate: 4 }}
+            whileInView={{ opacity: 1, y: 0, rotate: -1.5 }}
+            whileHover={{ rotate: 0, scale: 1.01 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.9, ease }}
+            className="lg:col-span-7 max-w-xl mx-auto w-full lg:mx-0 cursor-default"
+          >
+            <div className="receipt rounded-t-2xl px-7 py-8 md:px-10 md:py-10 text-[0.8rem] md:text-sm leading-relaxed">
+              {/* Header */}
+              <div className="text-center mb-6">
+                <p className="font-display not-italic text-2xl md:text-3xl text-ink mb-1 tracking-tight" style={{ fontFamily: "var(--font-fraunces)" }}>
+                  SAI AMARTYA B.L.
+                </p>
+                <p className="uppercase tracking-[0.25em] text-[0.65rem] text-cocoa">
+                  Proof-of-work receipt
+                </p>
+                <p className="text-[0.65rem] text-taupe mt-2">
+                  KITCHENER, ON ✦ NO REFUNDS ON EFFORT
+                </p>
+              </div>
+
+              <hr className="receipt-rule mb-5" />
+
+              {/* Line items, grouped by category */}
+              {groups.map((group) => (
+                <div key={group.category} className="mb-5">
+                  <p className="uppercase tracking-[0.2em] text-[0.65rem] text-marmalade mb-2.5">
+                    ** {group.category} **
+                  </p>
+                  {group.items.map((item) => (
+                    <div key={item.id} className="mb-2.5">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-ink font-medium shrink min-w-0">
+                          {item.title}
+                        </span>
+                        <span className="receipt-dots" />
+                        <span className="text-tangerine font-medium whitespace-nowrap">
+                          {item.value}
+                        </span>
+                      </div>
+                      <p className="text-[0.68rem] text-taupe uppercase tracking-wide">
+                        {item.subtitle}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ))}
+
+              <hr className="receipt-rule my-5" />
+
+              {/* Totals */}
+              <div className="space-y-1.5 mb-6">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-cocoa">SUBTOTAL</span>
+                  <span className="receipt-dots" />
+                  <span className="text-ink">EXCELLENCE</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-cocoa">SLEEP</span>
+                  <span className="receipt-dots" />
+                  <span className="text-taupe">NOT FOUND</span>
+                </div>
+                <div className="flex items-baseline gap-2 text-base md:text-lg">
+                  <span className="text-ink font-medium">TOTAL</span>
+                  <span className="receipt-dots" />
+                  <span className="text-tangerine font-medium">PRICELESS</span>
+                </div>
+              </div>
+
+              {/* Barcode */}
+              <div className="barcode w-3/4 mx-auto mb-3 opacity-80" />
+              <p className="text-center text-[0.65rem] tracking-[0.3em] text-taupe">
+                *** THANK YOU FOR SCROLLING ***
+              </p>
+            </div>
+            <div className="receipt-tear" />
+          </motion.div>
         </div>
       </div>
     </section>
   );
 }
 
-interface AchievementCardProps {
-  achievement: Achievement;
-  index: number;
-}
+function CountUp({
+  to,
+  prefix = "",
+  suffix = "",
+}: {
+  to: number;
+  prefix?: string;
+  suffix?: string;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  const [display, setDisplay] = useState(0);
 
-function AchievementCard({ achievement, index }: AchievementCardProps) {
-  const Icon = iconMap[achievement.icon_name] || Star;
+  useEffect(() => {
+    if (!inView) return;
+    const controls = animate(0, to, {
+      duration: 1.8,
+      ease: [0.16, 1, 0.3, 1],
+      onUpdate: (v) => setDisplay(Math.round(v)),
+    });
+    return () => controls.stop();
+  }, [inView, to]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.6, delay: index * 0.08 }}
-      className="bg-void/50 backdrop-blur-sm p-8 md:p-10 relative group transition-all duration-500 hover:bg-graphite/50 rounded-lg border border-steel/30 hover:border-steel/50 flex flex-col h-full"
-    >
-      {/* Highlight Border - Top accent */}
-      {achievement.highlight && (
-        <div 
-          className="absolute top-0 left-0 right-0 h-[2px] rounded-t-lg"
-          style={{ backgroundColor: achievement.color }}
-        />
-      )}
-
-      {/* Category Tag + Icon Row */}
-      <div className="flex items-center justify-between mb-8">
-        <span 
-          className="inline-flex px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider rounded border"
-          style={{ borderColor: `${achievement.color}40`, color: achievement.color }}
-        >
-          {achievement.category}
-        </span>
-        <Icon 
-          className="w-5 h-5 opacity-60 group-hover:opacity-100 transition-opacity"
-          style={{ color: achievement.color }}
-        />
-      </div>
-
-      {/* Value - Large display */}
-      <div className="mb-6 flex-grow">
-        <span 
-          className="font-display text-5xl md:text-6xl block leading-none tracking-tight"
-          style={{ color: achievement.color }}
-        >
-          {achievement.value}
-        </span>
-      </div>
-
-      <div className="mt-auto">
-        {/* Title */}
-        <h3 className="text-xl md:text-2xl font-display text-bone mb-2 leading-tight">
-          {achievement.title}
-        </h3>
-        
-        {/* Subtitle */}
-        <p className="font-mono text-xs text-smoke/70 mb-3 tracking-wide">
-          {achievement.subtitle}
-        </p>
-        
-        {/* Description */}
-        <p className="text-sm text-ash/70 leading-relaxed">
-          {achievement.description}
-        </p>
-      </div>
-
-      {/* Hover Corner Accent */}
-      <div 
-        className="absolute bottom-0 right-0 w-0 h-0 transition-all duration-500 group-hover:w-8 group-hover:h-8 opacity-50"
-        style={{
-          borderRight: `2px solid ${achievement.color}`,
-          borderBottom: `2px solid ${achievement.color}`,
-        }}
-      />
-    </motion.div>
+    <span ref={ref}>
+      {prefix}
+      {display}
+      {suffix}
+    </span>
   );
 }

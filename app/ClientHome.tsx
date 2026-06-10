@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import SmoothScroll from "./components/SmoothScroll";
-import Preloader from "./components/Preloader";
-import CustomCursor from "./components/CustomCursor";
 import FloatingNav from "./components/FloatingNav";
+import { Atmosphere } from "./components/Clouds";
 import Hero from "./components/Hero";
 import MarqueeBanner from "./components/MarqueeBanner";
 import Ventures from "./components/Ventures";
@@ -28,46 +26,35 @@ export default function ClientHome({
   experiences,
   projects,
 }: ClientHomeProps) {
-  const [isLoading, setIsLoading] = useState(true);
-
   return (
     <>
-      {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
-      
-      <CustomCursor />
       <FloatingNav />
-      
+      <Atmosphere />
+
       <SmoothScroll>
-        <main className="relative bg-void">
-          {/* Grain Overlay */}
+        <main className="relative">
           <div className="grain" />
-          
-          {/* Hero Section with Parallax */}
+
           <section id="hero">
             <Hero />
           </section>
-          
-          {/* Horizontal Scroll Ventures */}
-          {ventures && ventures.length > 0 && (
-            <Ventures data={ventures} />
-          )}
-          
-          {/* Marquee Banner */}
+
+          {ventures && ventures.length > 0 && <Ventures data={ventures} />}
+
           <MarqueeBanner />
-          
-          {/* Achievements - Proof of Work */}
-          {achievements && achievements.length > 0 && <Achievements data={achievements} />}
-          
-          {/* About - Philosophy */}
+
+          {achievements && achievements.length > 0 && (
+            <Achievements data={achievements} />
+          )}
+
           <About />
-          
-          {/* Experience - The Operational Track */}
-          {experiences && experiences.length > 0 && <Experience data={experiences} />}
-          
-          {/* Projects - The Empire */}
+
+          {experiences && experiences.length > 0 && (
+            <Experience data={experiences} />
+          )}
+
           {projects && projects.length > 0 && <Projects data={projects} />}
-          
-          {/* Footer */}
+
           <Footer />
         </main>
       </SmoothScroll>

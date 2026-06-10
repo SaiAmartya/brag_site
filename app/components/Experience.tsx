@@ -1,100 +1,86 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
-import { MapPin, Calendar } from "lucide-react";
-import Image from "next/image";
+import { motion, useScroll, useSpring } from "framer-motion";
+import { useRef } from "react";
+import {
+  MapPin,
+  Rocket,
+  HeartHandshake,
+  Zap,
+  Cpu,
+  GraduationCap,
+  Briefcase,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Tables } from "@/utils/supabase/database.types";
 
 type Experience = Tables<"experiences">;
 
+const ease = [0.16, 1, 0.3, 1] as const;
+
+const typeIcons: Record<string, LucideIcon> = {
+  startup: Rocket,
+  volunteer: HeartHandshake,
+  program: Zap,
+  extracurricular: Cpu,
+  robot: Cpu,
+  school: GraduationCap,
+  academic: GraduationCap,
+};
+
 export default function Experience({ data }: { data: Experience[] }) {
-  const targetRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [scrollRange, setScrollRange] = useState(0);
+  const railRef = useRef<HTMLDivElement>(null);
 
-  // Set up scroll progress monitoring for the section
+  // The rail draws itself as you scroll through the list
   const { scrollYProgress } = useScroll({
-    target: targetRef,
-    offset: ["start start", "end end"],
+    target: railRef,
+    offset: ["start 0.7", "end 0.65"],
   });
-
-  // Calculate scroll range on mount and resize
-  useEffect(() => {
-    if (scrollContainerRef.current) {
-      const calculateRange = () => {
-        const container = scrollContainerRef.current;
-        if (!container) return;
-        
-        // Calculate the total width of content minus the viewport width
-        const totalWidth = container.scrollWidth;
-        const viewportWidth = window.innerWidth;
-        
-        setScrollRange(totalWidth - viewportWidth);
-      };
-
-      calculateRange();
-      window.addEventListener("resize", calculateRange);
-      return () => window.removeEventListener("resize", calculateRange);
-    }
-  }, [data]);
-
-  // Transform vertical scroll to horizontal translation with buffer
-  const x = useTransform(scrollYProgress, [0.1, 0.9], ["0px", `-${scrollRange}px`]);
+  const lineScale = useSpring(scrollYProgress, { stiffness: 90, damping: 25 });
 
   if (!data || data.length === 0) return null;
 
   return (
-    <section ref={targetRef} id="experience" className="relative h-[400vh] bg-void py-24 md:py-32">
-      <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
-        
-        {/* Section Header */}
-        <div className="container-padding max-w-7xl mx-auto w-full mb-12 md:mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <span className="font-mono text-xs text-electric tracking-[0.2em] mb-5 block">
-              03 — EXPERIENCE
-            </span>
-            <h2 className="text-display font-display gradient-text leading-tight whitespace-nowrap">
-              Roadmap to Success
-            </h2>
-            <p className="text-body-lg text-smoke/80 max-w-2xl leading-relaxed mt-6">
-              Founding startups to leading robotics teams, each role builds high-agency.
-            </p>
-          </motion.div>
-        </div>
+    <section id="experience" className="relative section overflow-clip">
+      {/* Abstract backdrop */}
+      <div className="sun-glow w-[44vw] h-[44vw] top-[12%] -right-[18vw] opacity-70" />
+      <div className="sun-glow w-[30vw] h-[30vw] bottom-[8%] -left-[12vw] opacity-60" />
+      <div className="cloud cloud-lilac animate-drift-a w-[30vw] h-[22vw] top-[40%] -right-[8vw] opacity-50" />
 
-        {/* Horizontal Scroll Track */}
-        <div className="w-full relative">
-          <motion.div 
-            ref={scrollContainerRef}
-            style={{ x }}
-            className="flex gap-8 px-8 md:px-20 w-max items-center"
-          >
-            {/* Initial spacer */}
-            <div className="w-[5vw]" />
-            
-            {data.map((exp, index) => (
-              <ExperienceCard key={exp.id} experience={exp} />
-            ))}
-            
-            {/* Trailing spacer */}
-            <div className="w-[5vw]" />
-          </motion.div>
-        </div>
+      <div className="container-padding max-w-6xl mx-auto relative z-10">
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+          {/* Sticky header */}
+          <div className="lg:col-span-4 lg:sticky lg:top-32">
+            <motion.div
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, ease }}
+            >
+              <span className="section-label mb-5 inline-flex">The track record</span>
+              <h2 className="font-display text-display text-ink mb-5">
+                Where the hours <span className="accent-italic">went.</span>
+              </h2>
+              <p className="text-body-lg text-cocoa max-w-sm">
+                Founding startups, leading robotics teams, coaching kids.
+                Every role compounds.
+              </p>
+            </motion.div>
+          </div>
 
-        {/* Scroll Indicator */}
-        <div 
-          className="container-padding max-w-7xl mx-auto w-full mt-12 md:mt-16"
-        >
-          <div className="flex items-center gap-4">
-            <span className="font-mono text-[11px] text-ash/70 tracking-wide">SCROLL TO EXPLORE</span>
-            <div className="flex-1 h-px bg-steel/30" />
-            <span className="font-mono text-[11px] text-ash/70 tracking-wide">{data.length} ROLES</span>
+          {/* Rail + cards */}
+          <div ref={railRef} className="lg:col-span-8 relative pl-8 md:pl-12">
+            <div className="absolute left-1 md:left-2 top-2 bottom-2 w-px bg-apricot/40" />
+            <motion.div
+              style={{ scaleY: lineScale }}
+              className="absolute left-1 md:left-2 top-2 bottom-2 w-[2px] origin-top bg-gradient-to-b from-honey via-tangerine to-sunset"
+            />
+
+            <div className="flex flex-col gap-6">
+              {data.map((exp, index) => (
+                <ExperienceCard key={exp.id} experience={exp} index={index} />
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -102,92 +88,94 @@ export default function Experience({ data }: { data: Experience[] }) {
   );
 }
 
-function ExperienceCard({ experience }: { experience: Experience }) {
-  const imageSrc = experience.image && experience.image.trim() !== "" 
-    ? (experience.image.startsWith("http") || experience.image.startsWith("/") ? experience.image : `/${experience.image}`)
-    : "/tech_portfolio_hero_abstract_3d_index_0@4096x2286.jpeg";
+function ExperienceCard({
+  experience,
+  index,
+}: {
+  experience: Experience;
+  index: number;
+}) {
+  const iconKey = Object.keys(typeIcons).find((k) =>
+    experience.type.toLowerCase().includes(k)
+  );
+  const Icon = iconKey ? typeIcons[iconKey] : Briefcase;
+  const period = experience.period.replace(/\s*—\s*/g, " - ");
 
   return (
-    <div
-      className="group relative flex-shrink-0 w-[400px] md:w-[500px] h-[500px] rounded-lg overflow-hidden border border-steel/30 bg-void"
+    <motion.div
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.6, ease, delay: (index % 3) * 0.05 }}
+      className="relative"
     >
-      {/* Background Image */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-void z-10 opacity-70 group-hover:opacity-50 transition-opacity duration-500" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent z-10" />
-        <Image
-          src={imageSrc}
-          alt={experience.role}
-          fill
-          sizes="(max-width: 768px) 80vw, 500px"
-          className="object-cover transform scale-100 group-hover:scale-105 transition-transform duration-700 grayscale group-hover:grayscale-0"
-          unoptimized={!imageSrc.startsWith("/")}
-        />
-      </div>
+      {/* Rail dot */}
+      <motion.span
+        initial={{ scale: 0 }}
+        whileInView={{ scale: 1 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1], delay: 0.15 }}
+        className="absolute -left-[1.95rem] md:-left-[2.7rem] top-9 w-3 h-3 rounded-full bg-gradient-to-b from-honey to-tangerine border-2 border-cream shadow-[0_0_0_4px_rgba(255,184,92,0.25)]"
+      />
 
-      {/* Content Overlay */}
-      <div className="relative z-20 h-full flex flex-col justify-end p-8 md:p-10">
-        {/* Top Badges */}
-        <div className="absolute top-8 right-8 flex gap-3">
-          <span 
-            className={`inline-flex items-center px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider rounded backdrop-blur-md ${
-              experience.active 
-                ? "bg-electric/20 text-electric border border-electric/30" 
-                : "bg-steel/40 text-ash border border-steel/30"
-            }`}
-          >
-            {experience.type}
-          </span>
-          {experience.active && (
-            <span className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider rounded bg-matrix/20 text-matrix border border-matrix/30 backdrop-blur-md">
-              <span className="w-1.5 h-1.5 bg-matrix rounded-full animate-pulse" />
-              ACTIVE
+      <div className="card-warm rounded-3xl p-6 md:p-7">
+        <div className="relative z-10">
+          {/* Header row: icon tile + role/org + period */}
+          <div className="flex items-start gap-4 mb-4">
+            <span className="icon-tile shrink-0">
+              <Icon className="w-5 h-5" />
             </span>
-          )}
-        </div>
 
-        {/* Text Content */}
-        <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-          {/* Role */}
-          <h3 className="text-2xl md:text-3xl font-display text-bone mb-2 leading-tight group-hover:text-electric transition-colors">
-            {experience.role}
-          </h3>
-          
-          {/* Organization */}
-          <p className="font-mono text-sm text-smoke mb-6">
-            {experience.organization}
-          </p>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-display text-xl md:text-2xl text-ink leading-snug">
+                {experience.role}
+              </h3>
+              <p className="font-semibold text-marmalade text-sm md:text-base">
+                {experience.organization}
+              </p>
+            </div>
 
-          {/* Meta: Date & Location */}
-          <div className="flex items-center gap-5 mb-6 text-ash/70">
-            <span className="flex items-center gap-1.5 text-xs">
-              <Calendar className="w-3.5 h-3.5" />
-              {experience.period}
-            </span>
-            <span className="flex items-center gap-1.5 text-xs">
+            <div className="hidden sm:flex flex-col items-end gap-1.5 shrink-0">
+              <span className="chip !bg-white/70 !text-[0.7rem] whitespace-nowrap">
+                {period}
+              </span>
+              {experience.active && (
+                <span
+                  className="chip !text-[0.62rem] font-mono uppercase tracking-wider !text-leaf !border-leaf/25"
+                  style={{ background: "rgba(62,155,79,0.12)" }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-leaf animate-pulse-dot" />
+                  Active
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Meta (mobile shows period here) */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-3 text-taupe text-xs md:text-sm">
+            <span className="sm:hidden">{period}</span>
+            <span className="flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5" />
               {experience.location}
             </span>
+            <span className="uppercase tracking-wider font-mono text-[0.65rem] text-marmalade">
+              {experience.type}
+            </span>
           </div>
 
-          {/* Description */}
-          <p className="text-sm text-smoke/90 mb-8 leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all duration-300">
+          <p className="text-sm md:text-[0.92rem] text-cocoa leading-relaxed mb-4">
             {experience.description}
           </p>
 
-          {/* Skills */}
           <div className="flex flex-wrap gap-2">
             {experience.skills.map((skill) => (
-              <span 
-                key={skill} 
-                className="px-2.5 py-1 text-[10px] font-mono text-bone/70 uppercase tracking-wide border border-white/10 rounded bg-white/5"
-              >
+              <span key={skill} className="chip !bg-white/60 !text-[0.7rem]">
                 {skill}
               </span>
             ))}
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

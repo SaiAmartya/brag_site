@@ -1,200 +1,178 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, memo } from "react";
-import { ChevronDown } from "lucide-react";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  useScroll,
+} from "framer-motion";
+import { useRef } from "react";
+import { ArrowDown, MapPin } from "lucide-react";
 import Image from "next/image";
+import Clouds from "./Clouds";
 
-const roles = ["IB Student", "Systems Builder", "Technical Founder"];
-
-const badges = [
-  "Co-Founder @ TidalTasks",
-  "Co-Founder @ Canary OS",
+const floatingStats = [
+  { value: "200+", label: "users on TidalTasks", position: "top-2 -left-4 md:-left-16", delay: 1.1, float: "animate-float" },
+  { value: "98/100", label: "IB average", position: "top-1/3 -right-2 md:-right-20", delay: 1.3, float: "animate-float-slow" },
+  { value: "2", label: "active startups", position: "bottom-8 -left-2 md:-left-12", delay: 1.5, float: "animate-float-slow" },
+  { value: "25M+", label: "organic impressions", position: "-bottom-4 right-0 md:-right-10", delay: 1.7, float: "animate-float" },
 ];
 
-// Isolated component for the rotating text to prevent full Hero re-renders
-const RoleRotator = memo(function RoleRotator() {
-  const [roleIndex, setRoleIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRoleIndex((prev) => (prev + 1) % roles.length);
-    }, 2500);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="relative overflow-hidden h-7 px-[10px] flex items-center border border-electric/30 bg-electric/5 backdrop-blur-sm rounded-sm">
-      <AnimatePresence mode="wait">
-        <motion.span
-          key={roleIndex}
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -20, opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="font-mono text-xs text-electric tracking-widest uppercase"
-        >
-          {roles[roleIndex]}
-        </motion.span>
-      </AnimatePresence>
-    </div>
-  );
-});
+const ease = [0.16, 1, 0.3, 1] as const;
+const springCfg = { stiffness: 60, damping: 18, mass: 0.6 };
 
 export default function Hero() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // ── Mouse parallax: normalized -0.5..0.5, layers move at different depths ──
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+
+  const glowX = useSpring(useTransform(mx, (v) => v * -50), springCfg);
+  const glowY = useSpring(useTransform(my, (v) => v * -30), springCfg);
+  const pillsX = useSpring(useTransform(mx, (v) => v * 36), springCfg);
+  const pillsY = useSpring(useTransform(my, (v) => v * 24), springCfg);
+  const portraitX = useSpring(useTransform(mx, (v) => v * 14), springCfg);
+  const portraitY = useSpring(useTransform(my, (v) => v * 10), springCfg);
+
+  const handleMouse = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mx.set((e.clientX - rect.left) / rect.width - 0.5);
+    my.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
+
+  // ── Scroll parallax: headline drifts up slower than the page ──
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const textY = useTransform(scrollYProgress, [0, 1], [0, 140]);
+  const textOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  const portraitScrollY = useTransform(scrollYProgress, [0, 1], [0, 60]);
+
   return (
-    <section className="relative min-h-screen bg-void flex flex-col overflow-hidden">
-      {/* Background Elements - Optimized */}
-      <div className="absolute inset-0 grid-overlay opacity-30 pointer-events-none" />
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black z-10" />
-        <Image
-          src="/tech_portfolio_hero_abstract_3d_index_0@4096x2286.jpeg"
-          alt="Abstract Background"
-          fill
-          sizes="100vw"
-          className="object-cover opacity-20"
-          priority
-          quality={60} // Reduced quality for background image as it's low opacity
-        />
-      </div>
+    <section
+      ref={sectionRef}
+      onMouseMove={handleMouse}
+      className="relative min-h-screen flex flex-col items-center justify-start overflow-hidden pt-32 md:pt-40 pb-24"
+    >
+      <Clouds variant="hero" />
 
-      {/* Navigation */}
-      <nav className="relative z-20 flex items-center justify-between container-padding py-6 md:py-8">
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          className="flex items-center gap-4"
-        >
-          <span className="font-mono text-sm text-smoke tracking-wide">SAI.AMARTYA</span>
-          <span className="hidden sm:block w-12 h-px bg-steel/60" />
-          <span className="font-mono text-xs text-ash/70 hidden sm:inline">v2026.01</span>
-        </motion.div>
+      {/* Sun glows - deepest parallax layer */}
+      <motion.div style={{ x: glowX, y: glowY }} className="absolute inset-0 pointer-events-none">
+        <div className="sun-glow w-[60vw] h-[60vw] -top-[30vw] left-1/2 -translate-x-1/2" />
+        <div className="sun-glow w-[34vw] h-[34vw] top-[16%] -left-[12vw] opacity-70" />
+        <div className="sun-glow w-[28vw] h-[28vw] top-[28%] -right-[10vw] opacity-60" />
+      </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          className="flex items-center gap-6 md:gap-8"
-        >
-          <a href="#ventures" className="hidden md:block font-mono text-sm text-smoke/80 hover:text-white transition-colors">VENTURES</a>
-          <a href="#achievements" className="hidden md:block font-mono text-sm text-smoke/80 hover:text-white transition-colors">ACHIEVEMENTS</a>
-          <a href="mailto:saiamartya19@gmail.com" className="btn btn-outline text-xs">CONTACT</a>
-        </motion.div>
-      </nav>
+      {/* Drifting glass pills - nearest parallax layer */}
+      <motion.div style={{ x: pillsX, y: pillsY }} className="absolute inset-0 pointer-events-none hidden lg:block">
+        <div className="glass-pill absolute top-[18%] left-[8%] w-28 h-10 opacity-50 animate-float-slow" />
+        <div className="glass-pill absolute top-[14%] right-[12%] w-40 h-12 opacity-40 animate-float" />
+        <div className="glass-pill absolute bottom-[22%] left-[14%] w-20 h-8 opacity-40 animate-float" />
+        <div className="glass-pill absolute top-[46%] right-[6%] w-24 h-9 opacity-30 animate-float-slow" />
+      </motion.div>
 
-      {/* Main Content */}
-      <div className="flex-1 relative z-10 container-padding flex flex-col justify-center">
-        <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-          
-          {/* Left Column: Text Content */}
-          <div className="lg:col-span-7 flex flex-col items-start pt-10 lg:pt-0 order-2 lg:order-1 gap-[13px]">
-            
-            {/* Animated Role Label */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="mb-6 inline-flex"
-            >
-              <RoleRotator />
-            </motion.div>
-
-            {/* Main Heading */}
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="text-5xl md:text-7xl lg:text-8xl font-display font-bold text-white mb-6 leading-[0.9] tracking-tight"
-            >
-              Building the <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-ash to-steel">
-                Agentic Future
-              </span>
-            </motion.h1>
-
-            {/* Bio Paragraph */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-ash/90 text-base md:text-lg leading-relaxed max-w-xl mb-8 font-light"
-            >
-              I'm Sai Amartya B.L. I build AI systems that matter.
-              <br className="mb-4 block" />
-            </motion.p>
-
-            {/* Badges */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="flex flex-wrap gap-2 mb-10"
-            >
-              {badges.map((badge, idx) => (
-                <span 
-                  key={idx}
-                  className="px-3 py-1.5 border border-white/10 bg-white/5 rounded-full text-xs font-mono text-smoke hover:border-electric/50 hover:bg-electric/5 transition-colors cursor-default"
-                >
-                  {badge}
-                </span>
-              ))}
-            </motion.div>
-
-            {/* CTA Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="flex items-center gap-4"
-            >
-              <a 
-                href="#ventures" 
-                className="group relative px-6 py-3 bg-white text-black font-medium text-sm tracking-wide overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-electric translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                <span className="relative z-10 group-hover:text-white transition-colors flex items-center gap-2">
-                  EXPLORE VENTURES <ChevronDown className="w-4 h-4" />
-                </span>
-              </a>
-            </motion.div>
-          </div>
-
-          {/* Right Column: Image */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.4 }}
-            className="lg:col-span-5 flex justify-center lg:justify-end order-1 lg:order-2 relative"
+      <div className="container-padding relative z-10 max-w-5xl mx-auto text-center flex flex-col items-center">
+        <motion.div style={{ y: textY, opacity: textOpacity }} className="flex flex-col items-center">
+          {/* Location badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease, delay: 0.3 }}
+            className="glass-pill flex items-center gap-2 px-4 py-2 mb-8"
           >
-            {/* Optimized Glow Effect (Gradient instead of large Blur) */}
-            <div 
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] rounded-full pointer-events-none opacity-20"
-              style={{
-                background: 'radial-gradient(circle, rgba(94, 234, 212, 0.4) 0%, rgba(0,0,0,0) 70%)'
-              }}
-            />
-            
-            <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 will-change-[transform]">
-                {/* Static decorative rings instead of infinite animation to reduce GPU load */}
-                <div className="absolute inset-0 border border-white/5 rounded-full" />
-                <div className="absolute inset-4 border border-dashed border-white/10 rounded-full" />
-                
-                <div className="absolute inset-2 rounded-full overflow-hidden border-2 border-white/10 bg-black/50 backdrop-blur-sm shadow-2xl">
-                  <Image
-                    src="/Sai_Amartya.png"
-                    alt="Sai Amartya"
-                    fill
-                    className="object-cover scale-105 hover:scale-100 transition-transform duration-700"
-                    priority
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  />
-                </div>
-            </div>
+            <MapPin className="w-3.5 h-3.5 text-tangerine" />
+            <span className="text-sm font-medium text-cocoa">
+              Kitchener, Ontario · IB student & technical founder
+            </span>
           </motion.div>
-          
-        </div>
+
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 32 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, ease, delay: 0.45 }}
+            className="font-display text-hero text-ink mb-7 max-w-4xl"
+          >
+            Building the <span className="accent-italic">agentic</span> future,
+            one system at a time.
+          </motion.h1>
+
+          {/* Subhead */}
+          <motion.p
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease, delay: 0.6 }}
+            className="text-body-lg text-cocoa max-w-2xl mb-10"
+          >
+            I&apos;m Sai Amartya, co-founder of{" "}
+            <span className="font-semibold text-ink">TidalTasks AI</span> and{" "}
+            <span className="font-semibold text-ink">Canary OS</span>. I build AI
+            systems people actually use, and I ship them fast.
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease, delay: 0.75 }}
+            className="flex flex-wrap items-center justify-center gap-4 mb-16"
+          >
+            <a href="#ventures" className="btn btn-sunrise">
+              See what I&apos;m building
+              <ArrowDown className="w-4 h-4" />
+            </a>
+            <a href="mailto:saiamartya19@gmail.com" className="btn btn-glass">
+              Say hello
+            </a>
+          </motion.div>
+        </motion.div>
+
+        {/* Portrait in liquid glass frame, orbited by stat pills */}
+        <motion.div
+          initial={{ opacity: 0, y: 48, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 1, ease, delay: 0.9 }}
+          style={{ x: portraitX, y: portraitY }}
+          className="relative"
+        >
+          <motion.div style={{ y: portraitScrollY }}>
+            <div className="glass-strong rounded-[2.5rem] p-3 animate-float" style={{ animationDelay: "0.5s" }}>
+              <div className="relative w-56 h-56 md:w-72 md:h-72 rounded-[2rem] overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-b from-apricot/60 to-peach/40" />
+                <Image
+                  src="/Sai_Amartya.png"
+                  alt="Sai Amartya"
+                  fill
+                  className="object-cover relative z-10"
+                  priority
+                  sizes="(max-width: 768px) 224px, 288px"
+                />
+              </div>
+            </div>
+
+            {floatingStats.map((stat) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1], delay: stat.delay }}
+                className={`absolute ${stat.position}`}
+              >
+                <div className={`glass-pill px-4 py-2.5 flex items-baseline gap-2 ${stat.float}`}>
+                  <span className="font-display text-lg text-marmalade leading-none">
+                    {stat.value}
+                  </span>
+                  <span className="text-xs font-medium text-cocoa whitespace-nowrap">
+                    {stat.label}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );

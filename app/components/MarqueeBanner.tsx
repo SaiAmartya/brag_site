@@ -1,66 +1,79 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useScroll,
+  useVelocity,
+  useSpring,
+  useTransform,
+  useAnimationFrame,
+} from "framer-motion";
 import { useRef } from "react";
 
 const marqueeItems = [
-  "TECHNICAL FOUNDER-",
-  "AGENTIC FUTURE-",
-  "HIGH AGENCY-",
-  "COMPETITIVE RIGOR-",
-  "OPERATIONAL EXCELLENCE-",
-  "FULL-STACK OWNERSHIP-",
+  "Agentic AI",
+  "High agency",
+  "Full-stack ownership",
+  "Competitive rigor",
+  "Ship fast",
+  "Operational excellence",
 ];
 
-export default function MarqueeBanner() {
-  const containerRef = useRef<HTMLDivElement>(null);
+/** Wrap v into [min, max) for a seamless looping track. */
+const wrap = (min: number, max: number, v: number) => {
+  const range = max - min;
+  return ((((v - min) % range) + range) % range) + min;
+};
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
+/**
+ * Scroll-velocity-reactive marquee: drifts slowly on its own, then surges
+ * (and reverses) with the user's scroll momentum.
+ */
+export default function MarqueeBanner() {
+  const baseX = useMotionValue(0);
+  const { scrollY } = useScroll();
+  const scrollVelocity = useVelocity(scrollY);
+  const smoothVelocity = useSpring(scrollVelocity, {
+    damping: 50,
+    stiffness: 400,
+  });
+  const velocityFactor = useTransform(smoothVelocity, [0, 1000], [0, 4], {
+    clamp: false,
   });
 
-  const x1 = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
-  const x2 = useTransform(scrollYProgress, [0, 1], ["-30%", "0%"]);
+  const directionRef = useRef(-1);
+
+  useAnimationFrame((_, delta) => {
+    let moveBy = directionRef.current * 2.2 * (delta / 1000);
+
+    const vf = velocityFactor.get();
+    if (vf < 0) directionRef.current = 1;
+    else if (vf > 0) directionRef.current = -1;
+
+    moveBy += directionRef.current * Math.abs(vf) * (delta / 1000) * 2.2;
+    baseX.set(baseX.get() + moveBy);
+  });
+
+  const x = useTransform(baseX, (v) => `${wrap(-25, 0, v)}%`);
 
   return (
-    <section 
-      ref={containerRef}
-      className="relative py-16 md:py-20 bg-void overflow-hidden border-y border-steel/30"
-    >
-      {/* First Row - Moving Left - Outlined text */}
-      <motion.div 
-        className="flex whitespace-nowrap mb-3 md:mb-4"
-        style={{ x: x1 }}
-      >
-        {[...marqueeItems, ...marqueeItems].map((item, index) => (
-          <span
-            key={`row1-${index}`}
-            className="font-display text-5xl md:text-7xl lg:text-8xl text-transparent mx-6 md:mx-10"
-            style={{
-              WebkitTextStroke: "1px rgba(255, 255, 255, 0.15)",
-            }}
-          >
-            {item}
-          </span>
-        ))}
-      </motion.div>
-
-      {/* Second Row - Moving Right - Filled text with highlights */}
-      <motion.div 
-        className="flex whitespace-nowrap"
-        style={{ x: x2 }}
-      >
-        {[...marqueeItems, ...marqueeItems].map((item, index) => (
-          <span
-            key={`row2-${index}`}
-            className={`font-display text-5xl md:text-7xl lg:text-8xl mx-6 md:mx-10 transition-colors duration-300 ${
-              index % 4 === 0 ? "text-electric" : "text-bone/8"
-            }`}
-          >
-            {item}
-          </span>
-        ))}
+    <section className="relative py-10 md:py-14 overflow-hidden">
+      <motion.div style={{ x }} className="flex whitespace-nowrap w-max">
+        {[...Array(4)].flatMap((_, copy) =>
+          marqueeItems.map((item, index) => (
+            <span key={`${copy}-${index}`} className="flex items-center">
+              <span
+                className={`font-display text-3xl md:text-5xl mx-5 md:mx-8 ${
+                  index % 2 === 0 ? "accent-italic" : "text-cocoa/40"
+                }`}
+              >
+                {item}
+              </span>
+              <span className="text-honey text-xl md:text-2xl select-none">✦</span>
+            </span>
+          ))
+        )}
       </motion.div>
     </section>
   );

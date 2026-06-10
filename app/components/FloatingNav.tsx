@@ -1,100 +1,88 @@
 "use client";
 
-import { motion, useScroll, useSpring } from "framer-motion";
+import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
 const sections = [
-  { id: "hero", label: "INTRO" },
-  { id: "ventures", label: "VENTURES" },
-  { id: "achievements", label: "ACHIEVEMENTS" },
-  { id: "experience", label: "EXPERIENCE" },
-  { id: "projects", label: "PROJECTS" },
+  { id: "ventures", label: "Ventures" },
+  { id: "achievements", label: "Wins" },
+  { id: "experience", label: "Experience" },
+  { id: "projects", label: "Projects" },
 ];
 
 export default function FloatingNav() {
-  const [activeSection, setActiveSection] = useState("hero");
-  const [isVisible, setIsVisible] = useState(false);
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+  const [activeSection, setActiveSection] = useState("");
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      // Show nav after scrolling past hero
-      setIsVisible(window.scrollY > window.innerHeight * 0.5);
+      setScrolled(window.scrollY > 24);
 
-      // Determine active section
+      let current = "";
       for (const section of sections) {
         const element = document.getElementById(section.id);
         if (element) {
           const rect = element.getBoundingClientRect();
           if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
-            setActiveSection(section.id);
+            current = section.id;
             break;
           }
         }
       }
+      setActiveSection(current);
     };
 
-    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
-    <>
-      {/* Progress Bar */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-[2px] bg-steel/20 z-[9999]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isVisible ? 1 : 0 }}
+    <motion.header
+      initial={{ y: -80, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+      className="fixed top-4 left-0 right-0 z-[999] flex justify-center px-4"
+    >
+      <nav
+        className={`glass-pill flex items-center gap-1 pl-5 pr-2 py-2 transition-all duration-500 ${
+          scrolled ? "shadow-xl" : ""
+        }`}
       >
-        <motion.div
-          className="h-full bg-electric origin-left"
-          style={{ scaleX }}
-        />
-      </motion.div>
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="font-display text-lg text-ink mr-3 cursor-pointer leading-none"
+        >
+          Sai<span className="text-tangerine">.</span>
+        </button>
 
-      {/* Floating Dots Navigation */}
-      <motion.nav
-        className="fixed right-6 md:right-10 top-1/2 -translate-y-1/2 z-[999] hidden lg:flex flex-col gap-5"
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ 
-          opacity: isVisible ? 1 : 0,
-          x: isVisible ? 0 : 20
-        }}
-        transition={{ duration: 0.3 }}
-      >
-        {sections.map((section) => (
-          <button
-            key={section.id}
-            onClick={() => scrollToSection(section.id)}
-            className="group flex items-center gap-3 justify-end py-1"
-          >
-            <span 
-              className={`font-mono text-[10px] tracking-wider transition-all duration-300 ${
-                activeSection === section.id 
-                  ? "text-electric opacity-100" 
-                  : "text-ash/70 opacity-0 group-hover:opacity-100"
+        <div className="hidden md:flex items-center gap-1">
+          {sections.map((section) => (
+            <button
+              key={section.id}
+              onClick={() => scrollToSection(section.id)}
+              className={`px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-300 cursor-pointer ${
+                activeSection === section.id
+                  ? "bg-white/80 text-marmalade shadow-sm"
+                  : "text-cocoa hover:text-ink hover:bg-white/50"
               }`}
             >
               {section.label}
-            </span>
-            <div 
-              className={`w-2 h-2 rounded-sm transition-all duration-300 ${
-                activeSection === section.id
-                  ? "bg-electric scale-110 shadow-[0_0_8px_rgba(0,113,227,0.5)]"
-                  : "bg-transparent border border-steel/50 group-hover:border-smoke"
-              }`}
-            />
-          </button>
-        ))}
-      </motion.nav>
-    </>
+            </button>
+          ))}
+        </div>
+
+        <a
+          href="mailto:saiamartya19@gmail.com"
+          className="btn btn-sunrise !px-4 !py-2 text-sm ml-2"
+        >
+          Say hello
+        </a>
+      </nav>
+    </motion.header>
   );
 }

@@ -1,33 +1,43 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, JetBrains_Mono, Inter } from "next/font/google";
+import { Fraunces, Hanken_Grotesk, DM_Mono } from "next/font/google";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  axes: ["SOFT", "WONK", "opsz"],
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
+const hanken = Hanken_Grotesk({
+  variable: "--font-hanken",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
 });
 
-const inter = Inter({
-  variable: "--font-inter",
+const dmMono = DM_Mono({
+  variable: "--font-dm-mono",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  weight: ["300", "400", "500"],
 });
 
 export const metadata: Metadata = {
-  title: "Sai Amartya | Systems Builder",
-  description: "Engineering the Agentic Future. Systems builder focused on foundational AI infrastructure and operational excellence.",
-  keywords: ["AI", "Systems Builder", "TidalTasks", "Canary OS", "Technical Founder", "Software Engineering"],
+  title: "Sai Amartya · Building the Agentic Future",
+  description:
+    "IB student and technical founder from Kitchener, Ontario. Co-founder of TidalTasks AI and Canary OS, building AI systems people actually use.",
+  keywords: [
+    "Sai Amartya",
+    "AI",
+    "Technical Founder",
+    "TidalTasks",
+    "Canary OS",
+    "Agentic AI",
+    "Software Engineering",
+  ],
   authors: [{ name: "Sai Amartya Balamurugan Lakshmipraba" }],
   openGraph: {
-    title: "Sai Amartya | Systems Builder",
-    description: "Engineering the Agentic Future",
+    title: "Sai Amartya · Building the Agentic Future",
+    description:
+      "IB student and technical founder building AI systems people actually use.",
     type: "website",
   },
   icons: {
@@ -43,7 +53,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${inter.variable} antialiased`}
+        className={`${fraunces.variable} ${hanken.variable} ${dmMono.variable} antialiased`}
       >
         {children}
       </body>

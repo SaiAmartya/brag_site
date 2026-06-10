@@ -42,8 +42,8 @@ export default function ImageUpload({ value, onChange, bucket = "portfolio" }: I
         .getPublicUrl(filePath);
 
       onChange(data.publicUrl);
-    } catch (err: any) {
-      setError(err.message || "Error uploading image");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error uploading image");
     } finally {
       setUploading(false);
       // Reset input

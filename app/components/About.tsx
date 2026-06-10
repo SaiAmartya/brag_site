@@ -1,97 +1,145 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
 import { useRef } from "react";
-import Image from "next/image";
+import { Rocket, Trophy, Bot, Sparkles, Zap } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import Clouds from "./Clouds";
+
+/**
+ * Dayflow-style scroll-driven word reveal: the section pins while each word
+ * ignites from faint to full ink, with liquid-glass icon chips embedded
+ * mid-sentence.
+ */
+
+type Token =
+  | { word: string; accent?: boolean }
+  | { chip: { icon: LucideIcon; label?: string; tint: string } };
+
+const tokens: Token[] = [
+  { word: "Anyone" },
+  { word: "can" },
+  { word: "start" },
+  { word: "things." },
+  { word: "I" },
+  { chip: { icon: Rocket, label: "ship", tint: "text-tangerine" } },
+  { word: "them." },
+  { word: "From" },
+  { chip: { icon: Trophy, label: "competitive math", tint: "text-marmalade" } },
+  { word: "to" },
+  { chip: { icon: Bot, label: "agentic AI", tint: "text-sunset" } },
+  { word: "every" },
+  { word: "build" },
+  { word: "is" },
+  { word: "a" },
+  { word: "pursuit" },
+  { word: "of" },
+  { chip: { icon: Zap, label: "high agency", tint: "text-tangerine" } },
+  { word: "owning" },
+  { word: "the" },
+  { word: "problem" },
+  { word: "end" },
+  { word: "to" },
+  { word: "end," },
+  { word: "working" },
+  { word: "smarter" },
+  { chip: { icon: Sparkles, tint: "text-honey" } },
+  { word: "and", accent: true },
+  { word: "harder.", accent: true },
+];
 
 export default function About() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const quoteRef = useRef<HTMLDivElement>(null);
-
-  // Quote section scroll progress
-  const { scrollYProgress: quoteProgress } = useScroll({
-    target: quoteRef,
-    offset: ["start start", "end start"],
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end end"],
   });
 
-  // Quote animations - fade in, hold, fade out
-  const quoteOpacity = useTransform(quoteProgress, [0, 0.1, 0.7, 0.9], [0, 1, 1, 0]);
-  const quoteScale = useTransform(quoteProgress, [0, 0.1, 0.7, 0.9], [0.95, 1, 1, 0.98]);
-  const quoteY = useTransform(quoteProgress, [0, 0.1, 0.7, 0.9], [40, 0, 0, -30]);
+  return (
+    <section id="about" ref={ref} className="relative h-[280vh]">
+      <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
+        <Clouds variant="soft" />
+        <div className="sun-glow w-[50vw] h-[50vw] -bottom-[25vw] left-1/2 -translate-x-1/2" />
 
-  // Background parallax
-  const bgY = useTransform(quoteProgress, [0, 1], ["0%", "20%"]);
+        <div className="container-padding max-w-4xl mx-auto text-center relative z-10 pt-20 md:pt-12">
+          <motion.span
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="section-label mb-10 inline-flex"
+          >
+            The philosophy
+          </motion.span>
+
+          <p className="font-display text-[clamp(1.9rem,4.5vw,3.5rem)] text-ink leading-[1.3]">
+            {tokens.map((token, i) => (
+              <Tok
+                key={i}
+                token={token}
+                progress={scrollYProgress}
+                range={tokenRange(i, tokens.length)}
+              />
+            ))}
+          </p>
+
+          <motion.div
+            style={{ opacity: useTransform(scrollYProgress, [0.82, 0.95], [0, 1]) }}
+            className="flex items-center justify-center gap-4 mt-12"
+          >
+            <div className="w-12 h-px bg-apricot" />
+            <span className="text-honey">✦</span>
+            <div className="w-12 h-px bg-apricot" />
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function tokenRange(i: number, total: number): [number, number] {
+  const start = 0.08 + (i / total) * 0.72;
+  return [start, start + 1.4 / total];
+}
+
+function Tok({
+  token,
+  progress,
+  range,
+}: {
+  token: Token;
+  progress: MotionValue<number>;
+  range: [number, number];
+}) {
+  const opacity = useTransform(progress, range, [0.13, 1]);
+  const y = useTransform(progress, range, [10, 0]);
+  const scale = useTransform(progress, range, [0.94, 1]);
+
+  if ("chip" in token) {
+    const Icon = token.chip.icon;
+    return (
+      <motion.span
+        style={{ opacity, y, scale }}
+        className="glass-pill inline-flex items-center gap-2 align-middle mx-1.5 px-3.5 py-1.5 md:px-4 md:py-2 -translate-y-1"
+      >
+        <Icon className={`w-[0.8em] h-[0.8em] ${token.chip.tint}`} />
+        {token.chip.label && (
+          <span className="font-body font-semibold text-cocoa text-[0.45em] uppercase tracking-wide leading-none whitespace-nowrap">
+            {token.chip.label}
+          </span>
+        )}
+      </motion.span>
+    );
+  }
 
   return (
-    <section ref={containerRef} className="relative bg-void">
-      {/* === STICKY QUOTE SECTION === */}
-      <div ref={quoteRef} className="relative h-[200vh]">
-        <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
-          {/* Background with subtle parallax */}
-          <motion.div 
-            className="absolute inset-0 opacity-[0.07]"
-            style={{ y: bgY }}
-          >
-            <Image
-              src="/tech_portfolio_hero_abstract_3d_index_0@4096x2286.jpeg"
-              alt=""
-              fill
-              sizes="100vw"
-              className="object-cover"
-              unoptimized
-            />
-          </motion.div>
-
-          {/* Subtle gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-void via-transparent to-void py-[15px] px-[21px]" />
-
-          {/* Quote Content */}
-          <motion.div
-            style={{ opacity: quoteOpacity, scale: quoteScale, y: quoteY }}
-            className="relative z-10 max-w-5xl mx-auto container-padding text-center"
-          >
-            <motion.span 
-              className="font-mono text-xs text-electric tracking-[0.3em] mb-10 block"
-              style={{ opacity: quoteOpacity }}
-            >
-              THE PHILOSOPHY
-            </motion.span>
-            
-            <p className="text-[clamp(1.5rem,4vw,3.5rem)] font-display text-bone leading-[1.2] tracking-tight">
-              I engineer{" "}
-              <span className="relative inline-block">
-                <span className="gradient-electric">systems</span>
-                <motion.span 
-                  className="absolute -bottom-2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-electric to-transparent"
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1, delay: 0.5 }}
-                />
-              </span>
-              . From competitive mathematics to AI-driven operating environments, my work is a pursuit of{" "}
-              <span className="gradient-electric">high agency.</span>
-            </p>
-
-            {/* Decorative elements */}
-            <div className="flex items-center justify-center gap-4 mt-12">
-              <div className="w-12 h-px bg-steel/40" />
-              <div className="w-2 h-2 border border-electric/50 rotate-45" />
-              <div className="w-12 h-px bg-steel/40" />
-            </div>
-          </motion.div>
-
-          {/* Corner accents */}
-          <div className="absolute top-16 left-8 md:left-16 w-16 h-16">
-            <div className="absolute top-0 left-0 w-8 h-px bg-steel/30" />
-            <div className="absolute top-0 left-0 w-px h-8 bg-steel/30" />
-          </div>
-          <div className="absolute bottom-16 right-8 md:right-16 w-16 h-16">
-            <div className="absolute bottom-0 right-0 w-8 h-px bg-steel/30" />
-            <div className="absolute bottom-0 right-0 w-px h-8 bg-steel/30" />
-          </div>
-        </div>
-        </div>
-    </section>
+    <motion.span
+      style={{ opacity, y }}
+      className={`inline-block mr-[0.28em] ${
+        token.accent ? "accent-italic" : ""
+      }`}
+    >
+      {token.word}
+    </motion.span>
   );
 }
