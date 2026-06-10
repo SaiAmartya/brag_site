@@ -14,7 +14,7 @@ const links = [
   {
     name: "LinkedIn",
     value: "sai-amartya",
-    href: "https://linkedin.com/in/sai-amartya",
+    href: "https://www.linkedin.com/in/sai-amartya-balamurugan-lakshmipraba-537831371/",
     icon: Linkedin,
   },
   {
