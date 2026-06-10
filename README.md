@@ -1,4 +1,4 @@
-# 🌟 Bragsite
+# Personal Portfolio
 
 A sleek, animated, personal portfolio and brag document, designed to showcase projects, start-ups, experiences, and receipts. Built for velocity and beautifully optimized for proof-of-work.
 
