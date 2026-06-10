@@ -118,7 +118,10 @@ function ExperienceCard({
         className="absolute -left-[1.95rem] md:-left-[2.7rem] top-9 w-3 h-3 rounded-full bg-gradient-to-b from-honey to-tangerine border-2 border-cream shadow-[0_0_0_4px_rgba(255,184,92,0.25)]"
       />
 
-      <div className="card-warm rounded-3xl p-6 md:p-7">
+      <div className="backdrop-blur-2xl backdrop-saturate-[1.2] bg-white/40 border border-white/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),0_4px_24px_rgba(0,0,0,0.04)] rounded-3xl p-6 md:p-7 relative overflow-hidden transition-all duration-300 hover:bg-white/50 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.06)]">
+        {/* Subtle glass reflection overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-white/30 via-white/0 to-white/30 pointer-events-none" />
+
         <div className="relative z-10">
           {/* Header row: icon tile + role/org + period */}
           <div className="flex items-start gap-4 mb-4">

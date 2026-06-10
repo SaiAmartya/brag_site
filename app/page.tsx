@@ -29,6 +29,7 @@ export default async function Home() {
       description: "Won 2nd @ STEAM ICAC 2026 in the Computer Sciences category. Built a perceptually guided video compression pipeline achieving 4-6x improvement over H.265 using saliency-aware foreground-background segmentation.",
       skills: ["Computer Vision", "Video Compression", "Python"],
       active: false,
+      image: null,
       sort_order: -1,
       created_at: new Date().toISOString(),
     },
