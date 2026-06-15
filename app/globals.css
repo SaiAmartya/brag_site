@@ -427,6 +427,209 @@ body {
     0 6px 16px rgba(187, 129, 27, 0.1);
 }
 
+/* ═══════════ VENTURE SPEC CARD ═══════════ */
+
+/* Card shell: warm glow blooms on hover (no lift — these cards sticky-stack) */
+.venture-card {
+  transition: box-shadow 0.55s var(--ease-out-expo);
+}
+
+.venture-card:hover {
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, 1),
+    inset 0 -2px 6px rgba(187, 129, 27, 0.08),
+    0 38px 78px -24px rgba(249, 110, 0, 0.34),
+    0 8px 22px rgba(187, 129, 27, 0.12);
+}
+
+/* Corner index stamp on the venture image — replaces the muddy orange pill */
+.venture-index {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.5rem 0.85rem 0.55rem;
+  border-radius: 1rem;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.44));
+  -webkit-backdrop-filter: blur(18px) saturate(1.8);
+  backdrop-filter: blur(18px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 1),
+    0 10px 26px -10px rgba(65, 48, 31, 0.5);
+}
+
+.venture-index__label {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--color-marmalade);
+  line-height: 1;
+}
+
+.venture-index__num {
+  font-family: var(--font-display), serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+}
+
+/* Serif role kicker with a fading tangerine tick */
+.role-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-display), serif;
+  font-style: italic;
+  font-weight: 420;
+  font-size: 1.0625rem;
+  letter-spacing: 0.01em;
+  color: var(--color-marmalade);
+}
+
+.role-kicker::before {
+  content: "";
+  width: 1.75rem;
+  height: 1.5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-tangerine), rgba(249, 110, 0, 0));
+}
+
+/* The spec rail: one frosted panel, etched dividers between cells */
+.spec-rail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.32) 52%, rgba(255, 255, 255, 0.54) 100%);
+  -webkit-backdrop-filter: blur(22px) saturate(1.8);
+  backdrop-filter: blur(22px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, 1),
+    inset 0 -1px 3px rgba(187, 129, 27, 0.08),
+    0 14px 34px -16px rgba(187, 129, 27, 0.32);
+}
+
+/* Liquid specular streak across the rail — paints above the cells, kept faint */
+.spec-rail::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.32) 0%,
+    rgba(255, 255, 255, 0) 28%,
+    rgba(255, 255, 255, 0) 74%,
+    rgba(255, 255, 255, 0.18) 100%
+  );
+}
+
+@media (min-width: 640px) {
+  .spec-rail {
+    flex-direction: row;
+  }
+}
+
+.spec-cell {
+  position: relative;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.95rem 1.2rem;
+  transition: background 0.4s var(--ease-out-expo);
+}
+
+.spec-cell:hover {
+  background: rgba(255, 255, 255, 0.42);
+}
+
+/* Etched divider: a hairline shadow line (::before) trailed by a light line (::after) */
+.spec-cell + .spec-cell::before,
+.spec-cell + .spec-cell::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+/* Stacked (mobile): divider sits on the top edge */
+.spec-cell + .spec-cell::before {
+  left: 1.2rem;
+  right: 1.2rem;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(140, 96, 30, 0.22) 18%, rgba(140, 96, 30, 0.22) 82%, transparent);
+}
+
+.spec-cell + .spec-cell::after {
+  left: 1.2rem;
+  right: 1.2rem;
+  top: 1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85) 18%, rgba(255, 255, 255, 0.85) 82%, transparent);
+}
+
+/* Row (≥640px): divider becomes a vertical inset rule */
+@media (min-width: 640px) {
+  .spec-cell + .spec-cell::before {
+    left: 0;
+    right: auto;
+    top: 1rem;
+    bottom: 1rem;
+    height: auto;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(140, 96, 30, 0.22) 18%, rgba(140, 96, 30, 0.22) 82%, transparent);
+  }
+
+  .spec-cell + .spec-cell::after {
+    left: 1px;
+    right: auto;
+    top: 1rem;
+    bottom: 1rem;
+    height: auto;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.85) 18%, rgba(255, 255, 255, 0.85) 82%, transparent);
+  }
+}
+
+.spec-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-taupe);
+  line-height: 1;
+}
+
+/* Glowing tangerine tick — the "instrument panel" precision mark */
+.spec-label::before {
+  content: "";
+  width: 2px;
+  height: 9px;
+  border-radius: 1px;
+  background: var(--color-tangerine);
+  box-shadow: 0 0 7px rgba(249, 110, 0, 0.55);
+}
+
+.spec-value {
+  font-family: var(--font-display), serif;
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--color-ink);
+  text-wrap: balance;
+}
+
 /* ═══════════ BUTTONS ═══════════ */
 
 .btn {

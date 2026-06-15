@@ -10,6 +10,16 @@ type Venture = Tables<"ventures">;
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
+const containerV = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.12 } },
+};
+
+const itemV = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease } },
+};
+
 export default function Ventures({ data }: { data: Venture[] }) {
   return (
     <section id="ventures" className="relative section overflow-clip">
@@ -31,8 +41,7 @@ export default function Ventures({ data }: { data: Venture[] }) {
             Two startups, <span className="accent-italic">one mission.</span>
           </h2>
           <p className="text-body-lg text-cocoa max-w-2xl mx-auto">
-            Active companies building the substrate for an agentic future.
-            Shipped, used, and growing.
+            Shipping and growing active companies.
           </p>
         </motion.div>
 
@@ -82,7 +91,7 @@ function VentureCard({ venture, index }: { venture: Venture; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.8, ease }}
-      className="glass-strong rounded-[2.5rem] p-4 md:p-6 relative"
+      className="venture-card glass-strong rounded-[2.5rem] p-4 md:p-6 relative"
     >
       <div
         className={`flex flex-col gap-8 md:gap-12 md:items-center ${
@@ -101,43 +110,51 @@ function VentureCard({ venture, index }: { venture: Venture; index: number }) {
               unoptimized
             />
           </motion.div>
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/20 to-transparent pointer-events-none" />
-          <span className="absolute top-4 left-4 chip-tangerine chip backdrop-blur-md">
-            Venture {String(index + 1).padStart(2, "0")}
-          </span>
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/35 via-ink/5 to-transparent pointer-events-none" />
+          <div className="venture-index absolute top-4 left-4">
+            <span className="venture-index__label">Venture</span>
+            <span className="venture-index__num">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="md:w-1/2 px-2 pb-4 md:px-0 md:pb-0 md:pr-6">
-          <p className="font-display italic text-lg text-marmalade mb-3">
+        <motion.div
+          variants={containerV}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          className="md:w-1/2 px-2 pb-4 md:px-0 md:pb-0 md:pr-6"
+        >
+          <motion.p variants={itemV} className="role-kicker mb-3">
             {venture.tagline}
-          </p>
-          <h3 className="font-display text-title text-ink mb-4">
+          </motion.p>
+          <motion.h3 variants={itemV} className="font-display text-title text-ink mb-4">
             {venture.name}
-          </h3>
-          <p className="text-cocoa leading-relaxed mb-7">
+          </motion.h3>
+          <motion.p variants={itemV} className="text-cocoa leading-relaxed mb-7 max-w-md">
             {venture.description}
-          </p>
+          </motion.p>
 
-          {venture.metrics && typeof venture.metrics === "object" && (
-            <div className="flex flex-wrap gap-3 mb-8">
-              {Object.entries(venture.metrics as Record<string, string>).map(
-                ([key, value]) => (
-                  <div key={key} className="card-warm flex flex-col items-start py-2.5 px-4 rounded-2xl">
-                    <span className="font-display text-base text-ink leading-tight">
-                      {value}
-                    </span>
-                    <span className="text-[0.65rem] uppercase tracking-wider text-taupe font-mono">
-                      {key}
-                    </span>
-                  </div>
-                )
-              )}
-            </div>
-          )}
+          {venture.metrics &&
+            typeof venture.metrics === "object" &&
+            Object.keys(venture.metrics as Record<string, string>).length > 0 && (
+              <motion.div variants={itemV} className="spec-rail mb-8">
+                {Object.entries(venture.metrics as Record<string, string>).map(
+                  ([key, value]) => (
+                    <div key={key} className="spec-cell">
+                      <span className="spec-label">{key}</span>
+                      <span className="spec-value">{value}</span>
+                    </div>
+                  )
+                )}
+              </motion.div>
+            )}
 
           {venture.url && (
-            <a
+            <motion.a
+              variants={itemV}
               href={venture.url}
               target="_blank"
               rel="noopener noreferrer"
@@ -145,9 +162,9 @@ function VentureCard({ venture, index }: { venture: Venture; index: number }) {
             >
               Visit {venture.name}
               <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </a>
+            </motion.a>
           )}
-        </div>
+        </motion.div>
       </div>
     </motion.article>
   );
