@@ -2,13 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-
-const sections = [
-  { id: "ventures", label: "Ventures" },
-  { id: "achievements", label: "Wins" },
-  { id: "experience", label: "Experience" },
-  { id: "projects", label: "Projects" },
-];
+import { navSections, profile } from "@/app/content/site";
 
 export default function FloatingNav() {
   const [activeSection, setActiveSection] = useState("");
@@ -19,11 +13,14 @@ export default function FloatingNav() {
       setScrolled(window.scrollY > 24);
 
       let current = "";
-      for (const section of sections) {
+      for (const section of navSections) {
         const element = document.getElementById(section.id);
         if (element) {
           const rect = element.getBoundingClientRect();
-          if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
+          if (
+            rect.top <= window.innerHeight / 2 &&
+            rect.bottom >= window.innerHeight / 2
+          ) {
             current = section.id;
             break;
           }
@@ -37,10 +34,6 @@ export default function FloatingNav() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  };
-
   return (
     <motion.header
       initial={{ y: -80, opacity: 0 }}
@@ -49,36 +42,39 @@ export default function FloatingNav() {
       className="fixed top-4 left-0 right-0 z-[999] flex justify-center px-4"
     >
       <nav
-        className={`glass-pill flex items-center gap-1 pl-5 pr-2 py-2 transition-all duration-500 ${
+        aria-label="Sections"
+        className={`glass-pill flex items-center gap-1 pl-4 pr-2 py-2 max-w-full transition-all duration-500 ${
           scrolled ? "shadow-xl" : ""
         }`}
       >
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="font-display text-lg text-ink mr-3 cursor-pointer leading-none"
+        <a
+          href="#hero"
+          className="font-display text-lg text-ink mr-2 md:mr-3 leading-none shrink-0 px-1"
         >
           Sai<span className="text-tangerine">.</span>
-        </button>
+          <span className="sr-only">Back to top</span>
+        </a>
 
-        <div className="hidden md:flex items-center gap-1">
-          {sections.map((section) => (
-            <button
+        <div className="hidden md:flex items-center gap-0.5 lg:gap-1">
+          {navSections.map((section) => (
+            <a
               key={section.id}
-              onClick={() => scrollToSection(section.id)}
-              className={`px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-300 cursor-pointer ${
+              href={`#${section.id}`}
+              aria-current={activeSection === section.id ? "true" : undefined}
+              className={`px-3 lg:px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap ${
                 activeSection === section.id
                   ? "bg-white/80 text-marmalade shadow-sm"
                   : "text-cocoa hover:text-ink hover:bg-white/50"
               }`}
             >
               {section.label}
-            </button>
+            </a>
           ))}
         </div>
 
         <a
-          href="mailto:saiamartya19@gmail.com"
-          className="btn btn-sunrise !px-4 !py-2 text-sm ml-2"
+          href={`mailto:${profile.email}`}
+          className="btn btn-sunrise !px-4 !py-2 text-sm ml-2 shrink-0"
         >
           Say hello
         </a>

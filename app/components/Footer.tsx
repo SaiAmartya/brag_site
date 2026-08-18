@@ -3,33 +3,27 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight, Mail, Linkedin, Github } from "lucide-react";
 import Clouds from "./Clouds";
+import { footer, navSections, profile } from "@/app/content/site";
 
 const links = [
   {
     name: "Email",
-    value: "saiamartya19@gmail.com",
-    href: "mailto:saiamartya19@gmail.com",
+    value: profile.email,
+    href: `mailto:${profile.email}`,
     icon: Mail,
   },
   {
     name: "LinkedIn",
     value: "sai-amartya",
-    href: "https://www.linkedin.com/in/sai-amartya-balamurugan-lakshmipraba-537831371/",
+    href: profile.linkedin,
     icon: Linkedin,
   },
   {
     name: "GitHub",
     value: "SaiAmartya",
-    href: "https://github.com/SaiAmartya",
+    href: profile.github,
     icon: Github,
   },
-];
-
-const quickLinks = [
-  { name: "Ventures", href: "#ventures" },
-  { name: "Wins", href: "#achievements" },
-  { name: "Experience", href: "#experience" },
-  { name: "Projects", href: "#projects" },
 ];
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -53,9 +47,15 @@ export default function Footer() {
             Let&apos;s build something{" "}
             <span className="accent-italic">worth bragging about.</span>
           </h2>
-          <a href="mailto:saiamartya19@gmail.com" className="btn btn-sunrise text-base !px-8 !py-4 group">
+          <a
+            href={`mailto:${profile.email}`}
+            className="btn btn-sunrise text-base !px-8 !py-4 group"
+          >
             Say hello
-            <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            <ArrowUpRight
+              className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              aria-hidden
+            />
           </a>
         </motion.div>
       </div>
@@ -65,21 +65,31 @@ export default function Footer() {
         <div className="glass-strong rounded-[2rem] p-8 md:p-12">
           <div className="grid md:grid-cols-3 gap-10 md:gap-12">
             <div>
-              <span className="text-xs font-mono uppercase tracking-[0.2em] text-marmalade mb-5 block">
+              <h3 className="text-xs font-mono uppercase tracking-[0.2em] text-marmalade mb-5 block">
                 Connect
-              </span>
+              </h3>
               <ul className="space-y-3">
                 {links.map((link) => (
                   <li key={link.name}>
                     <a
                       href={link.href}
                       target={link.href.startsWith("http") ? "_blank" : undefined}
-                      rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                      className="flex items-center gap-2.5 text-cocoa hover:text-marmalade transition-colors group"
+                      rel={
+                        link.href.startsWith("http")
+                          ? "noopener noreferrer"
+                          : undefined
+                      }
+                      className="inline-flex items-center gap-2.5 text-cocoa hover:text-marmalade transition-colors group"
                     >
-                      <link.icon className="w-4 h-4 text-taupe group-hover:text-tangerine transition-colors" />
+                      <link.icon
+                        className="w-4 h-4 text-taupe group-hover:text-tangerine transition-colors"
+                        aria-hidden
+                      />
                       <span className="text-sm font-medium">{link.value}</span>
-                      <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowUpRight
+                        className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-hidden
+                      />
                     </a>
                   </li>
                 ))}
@@ -87,17 +97,17 @@ export default function Footer() {
             </div>
 
             <div>
-              <span className="text-xs font-mono uppercase tracking-[0.2em] text-marmalade mb-5 block">
+              <h3 className="text-xs font-mono uppercase tracking-[0.2em] text-marmalade mb-5 block">
                 Explore
-              </span>
+              </h3>
               <ul className="space-y-3">
-                {quickLinks.map((link) => (
-                  <li key={link.name}>
+                {navSections.map((link) => (
+                  <li key={link.id}>
                     <a
-                      href={link.href}
+                      href={`#${link.id}`}
                       className="text-sm font-medium text-cocoa hover:text-marmalade transition-colors"
                     >
-                      {link.name}
+                      {link.label}
                     </a>
                   </li>
                 ))}
@@ -106,15 +116,20 @@ export default function Footer() {
 
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <span className="w-2 h-2 bg-leaf rounded-full animate-pulse-dot" />
+                <span
+                  className="w-2 h-2 bg-leaf rounded-full animate-pulse-dot shrink-0"
+                  aria-hidden
+                />
                 <span className="text-xs font-mono uppercase tracking-[0.15em] text-leaf">
-                  Open to opportunities
+                  {footer.status}
                 </span>
               </div>
               <p className="text-sm text-cocoa leading-relaxed">
-                Kitchener, Ontario
+                {profile.location}
                 <br />
-                IB Student @ Cameron Heights C.I.
+                IB student at Cameron Heights C.I.
+                <br />
+                Co-founder at High Agency
               </p>
             </div>
           </div>
@@ -127,7 +142,8 @@ export default function Footer() {
           © 2026 Sai Amartya B.L. All rights reserved.
         </span>
         <span className="text-xs text-taupe font-mono flex items-center gap-2">
-          Built with Next.js <span className="text-honey">✦</span> v2026.06
+          Built with Next.js <span className="text-honey">✦</span>{" "}
+          {footer.version}
         </span>
       </div>
     </footer>

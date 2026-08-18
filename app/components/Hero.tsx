@@ -7,23 +7,18 @@ import {
   useTransform,
   useScroll,
 } from "framer-motion";
-import { useRef } from "react";
+import { useReducedMotionPreference } from "@/app/lib/useReducedMotionPreference";
+import { Fragment, useRef } from "react";
 import { ArrowDown, MapPin } from "lucide-react";
 import Image from "next/image";
 import Clouds from "./Clouds";
+import { hero, profile } from "@/app/content/site";
 
-const floatingStats = [
-  { value: "200+", label: "users on TidalTasks", position: "top-2 -left-4 md:-left-16", delay: 1.1, float: "animate-float" },
-  { value: "98/100", label: "IB average", position: "top-1/3 -right-2 md:-right-20", delay: 1.3, float: "animate-float-slow" },
-  { value: "2", label: "active startups", position: "bottom-8 -left-2 md:-left-12", delay: 1.5, float: "animate-float-slow" },
-  { value: "25M+", label: "organic impressions", position: "-bottom-4 right-0 md:-right-10", delay: 1.7, float: "animate-float" },
-];
-
-const ease = [0.16, 1, 0.3, 1] as const;
 const springCfg = { stiffness: 60, damping: 18, mass: 0.6 };
 
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
+  const reduceMotion = useReducedMotionPreference();
 
   // ── Mouse parallax: normalized -0.5..0.5, layers move at different depths ──
   const mx = useMotionValue(0);
@@ -37,6 +32,7 @@ export default function Hero() {
   const portraitY = useSpring(useTransform(my, (v) => v * 10), springCfg);
 
   const handleMouse = (e: React.MouseEvent<HTMLElement>) => {
+    if (reduceMotion) return;
     const rect = e.currentTarget.getBoundingClientRect();
     mx.set((e.clientX - rect.left) / rect.width - 0.5);
     my.set((e.clientY - rect.top) / rect.height - 0.5);
@@ -53,21 +49,29 @@ export default function Hero() {
 
   return (
     <section
+      id="hero"
       ref={sectionRef}
       onMouseMove={handleMouse}
-      className="relative min-h-screen flex flex-col items-center justify-start overflow-hidden pt-32 md:pt-40 pb-24"
+      className="relative min-h-screen flex flex-col items-center justify-start overflow-hidden pt-28 md:pt-32 pb-24"
     >
       <Clouds variant="hero" />
 
       {/* Sun glows - deepest parallax layer */}
-      <motion.div style={{ x: glowX, y: glowY }} className="absolute inset-0 pointer-events-none">
+      <motion.div
+        style={reduceMotion ? undefined : { x: glowX, y: glowY }}
+        className="absolute inset-0 pointer-events-none"
+      >
         <div className="sun-glow w-[60vw] h-[60vw] -top-[30vw] left-1/2 -translate-x-1/2" />
         <div className="sun-glow w-[34vw] h-[34vw] top-[16%] -left-[12vw] opacity-70" />
         <div className="sun-glow w-[28vw] h-[28vw] top-[28%] -right-[10vw] opacity-60" />
       </motion.div>
 
       {/* Drifting glass pills - nearest parallax layer */}
-      <motion.div style={{ x: pillsX, y: pillsY }} className="absolute inset-0 pointer-events-none hidden lg:block">
+      <motion.div
+        style={reduceMotion ? undefined : { x: pillsX, y: pillsY }}
+        className="absolute inset-0 pointer-events-none hidden lg:block"
+        aria-hidden
+      >
         <div className="glass-pill absolute top-[18%] left-[8%] w-28 h-10 opacity-50 animate-float-slow" />
         <div className="glass-pill absolute top-[14%] right-[12%] w-40 h-12 opacity-40 animate-float" />
         <div className="glass-pill absolute bottom-[22%] left-[14%] w-20 h-8 opacity-40 animate-float" />
@@ -75,76 +79,80 @@ export default function Hero() {
       </motion.div>
 
       <div className="container-padding relative z-10 max-w-5xl mx-auto text-center flex flex-col items-center">
-        <motion.div style={{ y: textY, opacity: textOpacity }} className="flex flex-col items-center">
-          {/* Location badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease, delay: 0.3 }}
-            className="glass-pill flex items-center gap-2 px-4 py-2 mb-8"
+        {/*
+          Entrance animations here are pure CSS so the headline paints with the
+          document rather than waiting on hydration, and stops animating
+          entirely under prefers-reduced-motion.
+        */}
+        <motion.div
+          style={reduceMotion ? undefined : { y: textY, opacity: textOpacity }}
+          className="flex flex-col items-center"
+        >
+          <div
+            className="reveal glass-pill flex items-center gap-2 px-4 py-2 mb-8"
+            style={{ animationDelay: "0.15s" }}
           >
-            <MapPin className="w-3.5 h-3.5 text-tangerine" />
-            <span className="text-sm font-medium text-cocoa">
-              Kitchener, Ontario · IB student & technical founder
-            </span>
-          </motion.div>
+            <MapPin className="w-3.5 h-3.5 text-tangerine shrink-0" aria-hidden />
+            <span className="text-sm font-medium text-cocoa">{hero.badge}</span>
+          </div>
 
-          {/* Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 32 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease, delay: 0.45 }}
-            className="font-display text-hero text-ink mb-7 max-w-4xl"
+          <h1
+            className="reveal font-display text-hero text-ink mb-7 max-w-4xl"
+            style={{ animationDelay: "0.28s" }}
           >
-            Building the <span className="accent-italic">agentic</span> future,
-            one system at a time.
-          </motion.h1>
+            {hero.headlineLead}{" "}
+            <span className="accent-italic">{hero.headlineAccent}</span>{" "}
+            {hero.headlineTail}
+          </h1>
 
-          {/* Subhead */}
-          <motion.p
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease, delay: 0.6 }}
-            className="text-body-lg text-cocoa max-w-2xl mb-10"
+          <p
+            className="reveal text-body-lg text-cocoa max-w-2xl mb-10"
+            style={{ animationDelay: "0.4s" }}
           >
-            I&apos;m Sai Amartya, co-founder of{" "}
-            <span className="font-semibold text-ink">TidalTasks AI</span> and{" "}
-            <span className="font-semibold text-ink">Canary OS</span>. I build AI
-            systems people actually use, and I ship them fast.
-          </motion.p>
+            {hero.subhead.map((segment, index) =>
+              segment.emphasis ? (
+                <span key={index} className="font-semibold text-ink">
+                  {segment.text}
+                </span>
+              ) : (
+                <Fragment key={index}>{segment.text}</Fragment>
+              )
+            )}
+          </p>
 
-          {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease, delay: 0.75 }}
-            className="flex flex-wrap items-center justify-center gap-4 mb-16"
+          <div
+            className="reveal flex flex-wrap items-center justify-center gap-4 mb-12"
+            style={{ animationDelay: "0.52s" }}
           >
-            <a href="#ventures" className="btn btn-sunrise">
-              See what I&apos;m building
-              <ArrowDown className="w-4 h-4" />
+            <a href={hero.primaryCta.href} className="btn btn-sunrise">
+              {hero.primaryCta.label}
+              <ArrowDown className="w-4 h-4" aria-hidden />
             </a>
-            <a href="mailto:saiamartya19@gmail.com" className="btn btn-glass">
-              Say hello
+            <a href={hero.secondaryCta.href} className="btn btn-glass">
+              {hero.secondaryCta.label}
             </a>
-          </motion.div>
+          </div>
         </motion.div>
 
         {/* Portrait in liquid glass frame, orbited by stat pills */}
         <motion.div
-          initial={{ opacity: 0, y: 48, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 1, ease, delay: 0.9 }}
-          style={{ x: portraitX, y: portraitY }}
-          className="relative"
+          style={
+            reduceMotion
+              ? { animationDelay: "0.7s" }
+              : { x: portraitX, y: portraitY, animationDelay: "0.7s" }
+          }
+          className="reveal relative"
         >
-          <motion.div style={{ y: portraitScrollY }}>
-            <div className="glass-strong rounded-[2.5rem] p-3 animate-float" style={{ animationDelay: "0.5s" }}>
+          <motion.div style={reduceMotion ? undefined : { y: portraitScrollY }}>
+            <div
+              className="glass-strong rounded-[2.5rem] p-3 animate-float"
+              style={{ animationDelay: "0.5s" }}
+            >
               <div className="relative w-56 h-56 md:w-72 md:h-72 rounded-[2rem] overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-apricot/60 to-peach/40" />
                 <Image
-                  src="/Sai_Amartya.png"
-                  alt="Sai Amartya"
+                  src={profile.portrait}
+                  alt={hero.portraitAlt}
                   fill
                   className="object-cover relative z-10"
                   priority
@@ -153,15 +161,15 @@ export default function Hero() {
               </div>
             </div>
 
-            {floatingStats.map((stat) => (
-              <motion.div
+            {hero.stats.map((stat) => (
+              <div
                 key={stat.label}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1], delay: stat.delay }}
-                className={`absolute ${stat.position}`}
+                className={`reveal-pop absolute ${stat.position}`}
+                style={{ animationDelay: stat.delay }}
               >
-                <div className={`glass-pill px-4 py-2.5 flex items-baseline gap-2 ${stat.float}`}>
+                <div
+                  className={`glass-pill px-4 py-2.5 flex items-baseline gap-2 ${stat.float}`}
+                >
                   <span className="font-display text-lg text-marmalade leading-none">
                     {stat.value}
                   </span>
@@ -169,7 +177,7 @@ export default function Hero() {
                     {stat.label}
                   </span>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </motion.div>
         </motion.div>

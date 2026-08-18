@@ -1,6 +1,12 @@
 "use client";
 
-import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  MotionValue,
+} from "framer-motion";
+import { useReducedMotionPreference } from "@/app/lib/useReducedMotionPreference";
 import { useRef } from "react";
 import { Rocket, Trophy, Bot, Sparkles, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -19,45 +25,58 @@ type Token =
 const tokens: Token[] = [
   { word: "Anyone" },
   { word: "can" },
-  { word: "start" },
-  { word: "things." },
+  { word: "wait" },
+  { word: "for" },
+  { word: "permission." },
   { word: "I" },
   { chip: { icon: Rocket, label: "ship", tint: "text-tangerine" } },
-  { word: "them." },
-  { word: "From" },
-  { chip: { icon: Trophy, label: "competitive math", tint: "text-marmalade" } },
-  { word: "to" },
-  { chip: { icon: Bot, label: "agentic AI", tint: "text-sunset" } },
-  { word: "every" },
-  { word: "build" },
-  { word: "is" },
-  { word: "a" },
-  { word: "pursuit" },
-  { word: "of" },
-  { chip: { icon: Zap, label: "high agency", tint: "text-tangerine" } },
-  { word: "owning" },
+  { word: "instead." },
+  { word: "Own" },
   { word: "the" },
   { word: "problem" },
   { word: "end" },
   { word: "to" },
   { word: "end," },
-  { word: "working" },
-  { word: "smarter" },
+  { word: "from" },
+  { chip: { icon: Bot, label: "agentic AI", tint: "text-sunset" } },
+  { word: "to" },
+  { chip: { icon: Trophy, label: "national stages", tint: "text-marmalade" } },
+  { word: "and" },
+  { word: "bet" },
+  { word: "on" },
+  { chip: { icon: Zap, label: "high agency", tint: "text-tangerine" } },
+  { word: "over" },
+  { word: "credentials." },
+  { word: "The" },
+  { word: "doors" },
+  { word: "open" },
   { chip: { icon: Sparkles, tint: "text-honey" } },
-  { word: "and", accent: true },
-  { word: "harder.", accent: true },
+  { word: "after", accent: true },
+  { word: "you", accent: true },
+  { word: "ship.", accent: true },
 ];
 
 export default function About() {
   const ref = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotionPreference();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end end"],
   });
+  const flourishOpacity = useTransform(scrollYProgress, [0.82, 0.95], [0, 1]);
 
   return (
-    <section id="about" ref={ref} className="relative h-[280vh]">
-      <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
+    <section
+      id="about"
+      ref={ref}
+      className={`relative scroll-mt-28 ${reduceMotion ? "" : "h-[280vh]"}`}
+      aria-labelledby="about-heading"
+    >
+      <div
+        className={`flex items-center justify-center overflow-hidden ${
+          reduceMotion ? "py-24 md:py-32" : "sticky top-0 h-screen"
+        }`}
+      >
         <Clouds variant="soft" />
         <div className="sun-glow w-[50vw] h-[50vw] -bottom-[25vw] left-1/2 -translate-x-1/2" />
 
@@ -68,6 +87,7 @@ export default function About() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
             className="section-label mb-10 inline-flex"
+            id="about-heading"
           >
             The philosophy
           </motion.span>
@@ -79,12 +99,13 @@ export default function About() {
                 token={token}
                 progress={scrollYProgress}
                 range={tokenRange(i, tokens.length)}
+                still={Boolean(reduceMotion)}
               />
             ))}
           </p>
 
           <motion.div
-            style={{ opacity: useTransform(scrollYProgress, [0.82, 0.95], [0, 1]) }}
+            style={reduceMotion ? undefined : { opacity: flourishOpacity }}
             className="flex items-center justify-center gap-4 mt-12"
           >
             <div className="w-12 h-px bg-apricot" />
@@ -106,10 +127,12 @@ function Tok({
   token,
   progress,
   range,
+  still,
 }: {
   token: Token;
   progress: MotionValue<number>;
   range: [number, number];
+  still: boolean;
 }) {
   const opacity = useTransform(progress, range, [0.13, 1]);
   const y = useTransform(progress, range, [10, 0]);
@@ -119,8 +142,8 @@ function Tok({
     const Icon = token.chip.icon;
     return (
       <motion.span
-        style={{ opacity, y, scale }}
-        className="glass-pill inline-flex items-center gap-2 align-middle mx-1.5 px-3.5 py-1.5 md:px-4 md:py-2 -translate-y-1"
+        style={still ? undefined : { opacity, y, scale }}
+        className="motion-token glass-pill inline-flex items-center gap-2 align-middle mx-1.5 px-3.5 py-1.5 md:px-4 md:py-2 -translate-y-1"
       >
         <Icon className={`w-[0.8em] h-[0.8em] ${token.chip.tint}`} />
         {token.chip.label && (
@@ -134,8 +157,8 @@ function Tok({
 
   return (
     <motion.span
-      style={{ opacity, y }}
-      className={`inline-block mr-[0.28em] ${
+      style={still ? undefined : { opacity, y }}
+      className={`motion-token inline-block mr-[0.28em] ${
         token.accent ? "accent-italic" : ""
       }`}
     >

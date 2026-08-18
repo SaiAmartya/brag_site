@@ -5,13 +5,18 @@ A sleek, animated, personal portfolio and brag document, designed to showcase pr
 ## 🚀 Tech Stack
 - **Framework:** [Next.js](https://nextjs.org/) (App Router)
 - **Styling:** Tailwind CSS & Framer Motion for buttery smooth animations
-- **Database:** Supabase (PostgreSQL) for dynamic content injection
+- **Content:** a typed local source of truth (`app/content/site.ts`)
+- **Database:** Supabase (PostgreSQL), used by the optional admin CMS only
 - **Deployment:** Vercel
 
 ## 📂 Project Structure
 - **/app**: Core Next.js routing, layouts, and server actions.
-- **/app/components**: Reusable UI blocks (`Hero`, `Ventures`, `Projects`, `MarqueeBanner`, `SmoothScroll`, etc.).
-- **/app/admin**: Authenticated CMS to manage portfolio entries directly on the web.
+- **/app/content/site.ts**: The single source of truth for every piece of public
+  content: hero, current work, the FBLA feature, achievements, experience,
+  projects, nav, and footer. Edit here to change the site.
+- **/app/components**: Reusable UI blocks (`Hero`, `CurrentWork`, `FblaFeature`,
+  `Achievements`, `Experience`, `Projects`, `MarqueeBanner`, `SmoothScroll`, etc.).
+- **/app/admin**: Authenticated CMS over the legacy Supabase tables.
 - **/supabase**: Supabase DB schemas, migrations, and local testing configurations.
 
 ## 🧱 Local Development
@@ -27,11 +32,12 @@ A sleek, animated, personal portfolio and brag document, designed to showcase pr
    npm install
    ```
 
-3. **Set up Supabase variables:**
-   Create a `.env.local` file with your keys:
+3. **Optional: set up Supabase variables.**
+   The public page needs none of these. They are only required for `/login` and
+   `/admin`. Create a `.env.local` file with your keys:
    ```env
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your_supabase_publishable_key
    ```
 
 4. **Run the local server:**
@@ -42,6 +48,12 @@ A sleek, animated, personal portfolio and brag document, designed to showcase pr
 Visit `http://localhost:3000` to interact with the frontend.
 
 ## ✨ Features
-- **Dynamic Portfolios:** Data automatically loads from the Supabase tables (`ventures`, `experiences`, `projects`, `achievements`).
-- **CMS Backend:** Simple admin panel to seamlessly add, edit, and organize content.
+- **Deterministic content:** The public page renders entirely from
+  `app/content/site.ts`, with no network call on the render path, so it can never
+  go blank or revert to stale rows.
+- **CMS Backend:** Admin panel over the legacy Supabase tables, kept for editing
+  history. It no longer drives the public page.
 - **Micro-interactions:** Custom components with spring physics, parallax, and animated clouds via Framer Motion.
+- **Accessible by default:** Skip link, semantic heading order, descriptive alt
+  text, visible focus states, and a full `prefers-reduced-motion` path. Hero copy
+  renders without JavaScript.

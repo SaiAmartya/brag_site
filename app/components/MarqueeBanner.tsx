@@ -9,16 +9,9 @@ import {
   useTransform,
   useAnimationFrame,
 } from "framer-motion";
+import { useReducedMotionPreference } from "@/app/lib/useReducedMotionPreference";
 import { useRef } from "react";
-
-const marqueeItems = [
-  "Agentic AI",
-  "High agency",
-  "Full-stack ownership",
-  "Competitive rigor",
-  "Ship fast",
-  "Operational excellence",
-];
+import { marqueeItems } from "@/app/content/site";
 
 /** Wrap v into [min, max) for a seamless looping track. */
 const wrap = (min: number, max: number, v: number) => {
@@ -29,8 +22,32 @@ const wrap = (min: number, max: number, v: number) => {
 /**
  * Scroll-velocity-reactive marquee: drifts slowly on its own, then surges
  * (and reverses) with the user's scroll momentum.
+ *
+ * The static track is what the server renders and what hydration commits, so
+ * the words are held still until matchMedia has explicitly said motion is
+ * allowed. Only then is the animated track mounted, so a reduced-motion user
+ * never runs the frame loop and never has a transform written at all. Both
+ * tracks render the same words in the same type.
  */
 export default function MarqueeBanner() {
+  // Reads "reduce" on the server and through hydration, so this is true only
+  // once a client snapshot has explicitly reported no-preference.
+  const motionAllowed = !useReducedMotionPreference();
+
+  return (
+    <section className="relative py-10 md:py-14 overflow-hidden" aria-hidden>
+      {motionAllowed ? (
+        <DriftingTrack />
+      ) : (
+        <div className="flex whitespace-nowrap w-max">
+          <MarqueeWords />
+        </div>
+      )}
+    </section>
+  );
+}
+
+function DriftingTrack() {
   const baseX = useMotionValue(0);
   const { scrollY } = useScroll();
   const scrollVelocity = useVelocity(scrollY);
@@ -58,23 +75,30 @@ export default function MarqueeBanner() {
   const x = useTransform(baseX, (v) => `${wrap(-25, 0, v)}%`);
 
   return (
-    <section className="relative py-10 md:py-14 overflow-hidden">
-      <motion.div style={{ x }} className="flex whitespace-nowrap w-max">
-        {[...Array(4)].flatMap((_, copy) =>
-          marqueeItems.map((item, index) => (
-            <span key={`${copy}-${index}`} className="flex items-center">
-              <span
-                className={`font-display text-3xl md:text-5xl mx-5 md:mx-8 ${
-                  index % 2 === 0 ? "accent-italic" : "text-cocoa/40"
-                }`}
-              >
-                {item}
-              </span>
-              <span className="text-honey text-xl md:text-2xl select-none">✦</span>
+    <motion.div style={{ x }} className="flex whitespace-nowrap w-max">
+      <MarqueeWords />
+    </motion.div>
+  );
+}
+
+/** Four copies of the word list, so the track is wider than any viewport. */
+function MarqueeWords() {
+  return (
+    <>
+      {[...Array(4)].flatMap((_, copy) =>
+        marqueeItems.map((item, index) => (
+          <span key={`${copy}-${index}`} className="flex items-center">
+            <span
+              className={`font-display text-3xl md:text-5xl mx-5 md:mx-8 ${
+                index % 2 === 0 ? "accent-italic" : "text-cocoa/40"
+              }`}
+            >
+              {item}
             </span>
-          ))
-        )}
-      </motion.div>
-    </section>
+            <span className="text-honey text-xl md:text-2xl select-none">✦</span>
+          </span>
+        ))
+      )}
+    </>
   );
 }

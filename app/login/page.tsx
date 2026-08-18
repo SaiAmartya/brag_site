@@ -8,12 +8,15 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
+
+    // Created on submit, not on render, so this page prerenders without
+    // Supabase environment variables present at build time.
+    const supabase = createClient();
 
     const { error } = await supabase.auth.signInWithOtp({
       email,

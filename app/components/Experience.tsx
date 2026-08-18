@@ -9,12 +9,11 @@ import {
   Zap,
   Cpu,
   GraduationCap,
+  Store,
   Briefcase,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { Tables } from "@/utils/supabase/database.types";
-
-type Experience = Tables<"experiences">;
+import { experiences, type ExperienceItem } from "@/app/content/site";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -23,12 +22,12 @@ const typeIcons: Record<string, LucideIcon> = {
   volunteer: HeartHandshake,
   program: Zap,
   extracurricular: Cpu,
-  robot: Cpu,
+  business: Store,
   school: GraduationCap,
   academic: GraduationCap,
 };
 
-export default function Experience({ data }: { data: Experience[] }) {
+export default function Experience() {
   const railRef = useRef<HTMLDivElement>(null);
 
   // The rail draws itself as you scroll through the list
@@ -38,10 +37,15 @@ export default function Experience({ data }: { data: Experience[] }) {
   });
   const lineScale = useSpring(scrollYProgress, { stiffness: 90, damping: 25 });
 
-  if (!data || data.length === 0) return null;
+  const current = experiences.filter((e) => e.active);
+  const completed = experiences.filter((e) => !e.active);
 
   return (
-    <section id="experience" className="relative section overflow-clip">
+    <section
+      id="experience"
+      className="relative section scroll-mt-28 overflow-clip"
+      aria-labelledby="experience-heading"
+    >
       {/* Abstract backdrop */}
       <div className="sun-glow w-[44vw] h-[44vw] top-[12%] -right-[18vw] opacity-70" />
       <div className="sun-glow w-[30vw] h-[30vw] bottom-[8%] -left-[12vw] opacity-60" />
@@ -57,13 +61,18 @@ export default function Experience({ data }: { data: Experience[] }) {
               viewport={{ once: true }}
               transition={{ duration: 0.7, ease }}
             >
-              <span className="section-label mb-5 inline-flex">The track record</span>
-              <h2 className="font-display text-display text-ink mb-5">
+              <span className="section-label mb-5 inline-flex">
+                The track record
+              </span>
+              <h2
+                id="experience-heading"
+                className="font-display text-display text-ink mb-5"
+              >
                 Where the hours <span className="accent-italic">went.</span>
               </h2>
               <p className="text-body-lg text-cocoa max-w-sm">
-                Founding startups, leading robotics teams, coaching kids.
-                Every role compounds.
+                Shipping at a YC company, co-founding my own, competing, and
+                coaching kids. Every role compounds.
               </p>
             </motion.div>
           </div>
@@ -74,10 +83,17 @@ export default function Experience({ data }: { data: Experience[] }) {
             <motion.div
               style={{ scaleY: lineScale }}
               className="absolute left-1 md:left-2 top-2 bottom-2 w-[2px] origin-top bg-gradient-to-b from-honey via-tangerine to-sunset"
+              aria-hidden
             />
 
             <div className="flex flex-col gap-6">
-              {data.map((exp, index) => (
+              <RailHeading>Now</RailHeading>
+              {current.map((exp, index) => (
+                <ExperienceCard key={exp.id} experience={exp} index={index} />
+              ))}
+
+              <RailHeading>Completed</RailHeading>
+              {completed.map((exp, index) => (
                 <ExperienceCard key={exp.id} experience={exp} index={index} />
               ))}
             </div>
@@ -88,18 +104,31 @@ export default function Experience({ data }: { data: Experience[] }) {
   );
 }
 
+function RailHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.h3
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.5, ease }}
+      className="section-label mt-4 first:mt-0"
+    >
+      {children}
+    </motion.h3>
+  );
+}
+
 function ExperienceCard({
   experience,
   index,
 }: {
-  experience: Experience;
+  experience: ExperienceItem;
   index: number;
 }) {
   const iconKey = Object.keys(typeIcons).find((k) =>
     experience.type.toLowerCase().includes(k)
   );
   const Icon = iconKey ? typeIcons[iconKey] : Briefcase;
-  const period = experience.period.replace(/\s*—\s*/g, " - ");
 
   return (
     <motion.div
@@ -116,23 +145,27 @@ function ExperienceCard({
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1], delay: 0.15 }}
         className="absolute -left-[1.95rem] md:-left-[2.7rem] top-9 w-3 h-3 rounded-full bg-gradient-to-b from-honey to-tangerine border-2 border-cream shadow-[0_0_0_4px_rgba(255,184,92,0.25)]"
+        aria-hidden
       />
 
       <div className="backdrop-blur-2xl backdrop-saturate-[1.2] bg-white/40 border border-white/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),0_4px_24px_rgba(0,0,0,0.04)] rounded-3xl p-6 md:p-7 relative overflow-hidden transition-all duration-300 hover:bg-white/50 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_8px_32px_rgba(0,0,0,0.06)]">
         {/* Subtle glass reflection overlay */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-white/30 via-white/0 to-white/30 pointer-events-none" />
+        <div
+          className="absolute inset-0 bg-gradient-to-tr from-white/30 via-white/0 to-white/30 pointer-events-none"
+          aria-hidden
+        />
 
         <div className="relative z-10">
           {/* Header row: icon tile + role/org + period */}
           <div className="flex items-start gap-4 mb-4">
-            <span className="icon-tile shrink-0">
+            <span className="icon-tile shrink-0" aria-hidden>
               <Icon className="w-5 h-5" />
             </span>
 
             <div className="min-w-0 flex-1">
-              <h3 className="font-display text-xl md:text-2xl text-ink leading-snug">
+              <h4 className="font-display text-xl md:text-2xl text-ink leading-snug">
                 {experience.role}
-              </h3>
+              </h4>
               <p className="font-semibold text-marmalade text-sm md:text-base">
                 {experience.organization}
               </p>
@@ -140,25 +173,39 @@ function ExperienceCard({
 
             <div className="hidden sm:flex flex-col items-end gap-1.5 shrink-0">
               <span className="chip !bg-white/70 !text-[0.7rem] whitespace-nowrap">
-                {period}
+                {experience.period}
               </span>
-              {experience.active && (
+              {experience.active ? (
                 <span
                   className="chip !text-[0.62rem] font-mono uppercase tracking-wider !text-leaf !border-leaf/25"
                   style={{ background: "rgba(62,155,79,0.12)" }}
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-leaf animate-pulse-dot" />
+                  <span
+                    className="w-1.5 h-1.5 rounded-full bg-leaf animate-pulse-dot"
+                    aria-hidden
+                  />
                   Active
+                </span>
+              ) : (
+                <span className="chip !bg-white/50 !text-[0.62rem] font-mono uppercase tracking-wider !text-taupe">
+                  Completed
                 </span>
               )}
             </div>
           </div>
 
-          {/* Meta (mobile shows period here) */}
+          {/* Meta (mobile shows period and status here) */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-3 text-taupe text-xs md:text-sm">
-            <span className="sm:hidden">{period}</span>
+            <span className="sm:hidden">{experience.period}</span>
+            <span
+              className={`sm:hidden uppercase tracking-wider font-mono text-[0.65rem] ${
+                experience.active ? "text-leaf" : "text-taupe"
+              }`}
+            >
+              {experience.active ? "Active" : "Completed"}
+            </span>
             <span className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5" />
+              <MapPin className="w-3.5 h-3.5" aria-hidden />
               {experience.location}
             </span>
             <span className="uppercase tracking-wider font-mono text-[0.65rem] text-marmalade">

@@ -20,25 +20,51 @@ const dmMono = DM_Mono({
   weight: ["300", "400", "500"],
 });
 
+const title = "Sai Amartya · SWE Intern at Aside (YC F25)";
+const description =
+  "17 year old builder from Kitchener, Ontario. Software Engineer Intern at Aside (YC F25), co-founder of High Agency, and 4th in the nation at FBLA NLC 2026.";
+
 export const metadata: Metadata = {
-  title: "Sai Amartya · Building the Agentic Future",
-  description:
-    "IB student and technical founder from Kitchener, Ontario. Co-founder of TidalTasks AI and Canary OS, building AI systems people actually use.",
+  metadataBase: new URL("https://saiamartya.vercel.app"),
+  title,
+  description,
   keywords: [
     "Sai Amartya",
-    "AI",
-    "Technical Founder",
-    "TidalTasks",
-    "Canary OS",
-    "Agentic AI",
-    "Software Engineering",
+    "Aside",
+    "YC F25",
+    "High Agency",
+    "FBLA NLC 2026",
+    "AI agents",
+    "Software Engineer",
+    "Kitchener Ontario",
+    "Cameron Heights",
   ],
   authors: [{ name: "Sai Amartya Balamurugan Lakshmipraba" }],
+  creator: "Sai Amartya Balamurugan Lakshmipraba",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "Sai Amartya · Building the Agentic Future",
-    description:
-      "IB student and technical founder building AI systems people actually use.",
-    type: "website",
+    title,
+    description,
+    url: "/",
+    siteName: "Sai Amartya",
+    type: "profile",
+    locale: "en_CA",
+    images: [
+      {
+        url: "/fbla/fbla-portrait-glass-trophy.jpg",
+        width: 1600,
+        height: 1067,
+        alt: "Sai Amartya holding the FBLA National Leadership Conference glass award.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: ["/fbla/fbla-portrait-glass-trophy.jpg"],
   },
   icons: {
     icon: "/favicon.png",
@@ -52,6 +78,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/*
+          Without JavaScript, entrance animations never run. Force every
+          animated element to its resting state so no copy is ever hidden.
+        */}
+        <noscript>
+          <style>{`
+            [style*="opacity:0"], [style*="opacity: 0"] {
+              opacity: 1 !important;
+              transform: none !important;
+            }
+            .reveal, .reveal-pop { animation: none !important; }
+          `}</style>
+        </noscript>
+      </head>
       <body
         className={`${fraunces.variable} ${hanken.variable} ${dmMono.variable} antialiased`}
       >

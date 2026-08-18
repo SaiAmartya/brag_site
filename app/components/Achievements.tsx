@@ -1,33 +1,27 @@
 "use client";
 
 import { motion, animate, useInView } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
-import { Tables } from "@/utils/supabase/database.types";
-
-type Achievement = Tables<"achievements">;
-
-const counters = [
-  { to: 98, suffix: "/100", label: "IB average" },
-  { to: 1, prefix: "Top ", suffix: "%", label: "school-wide rank" },
-  { to: 200, suffix: "+", label: "users shipped to" },
-  { to: 25, suffix: "M+", label: "organic impressions" },
-];
+import { useReducedMotionPreference } from "@/app/lib/useReducedMotionPreference";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { achievements, counters, type AchievementLine } from "@/app/content/site";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
-export default function Achievements({ data }: { data: Achievement[] }) {
-  if (!data || data.length === 0) return null;
-
-  // Group by category, preserving sort order of first appearance
-  const groups: { category: string; items: Achievement[] }[] = [];
-  for (const item of data) {
+export default function Achievements() {
+  // Group by category, preserving the order categories first appear
+  const groups: { category: string; items: AchievementLine[] }[] = [];
+  for (const item of achievements) {
     const group = groups.find((g) => g.category === item.category);
     if (group) group.items.push(item);
     else groups.push({ category: item.category, items: [item] });
   }
 
   return (
-    <section id="achievements" className="relative section overflow-hidden">
+    <section
+      id="achievements"
+      className="relative section scroll-mt-28 overflow-hidden"
+      aria-labelledby="achievements-heading"
+    >
       <div className="sun-glow w-[46vw] h-[46vw] top-[8%] -left-[20vw] opacity-75" />
       <div className="sun-glow w-[32vw] h-[32vw] bottom-[10%] -right-[14vw] opacity-65" />
       <div className="cloud cloud-lilac animate-drift-b w-[34vw] h-[24vw] top-[5%] -right-[10vw] opacity-55" />
@@ -44,7 +38,10 @@ export default function Achievements({ data }: { data: Achievement[] }) {
               transition={{ duration: 0.7, ease }}
             >
               <span className="section-label mb-5 inline-flex">Proof of work</span>
-              <h2 className="font-display text-display text-ink mb-5">
+              <h2
+                id="achievements-heading"
+                className="font-display text-display text-ink mb-5"
+              >
                 The receipts, <span className="accent-italic">in writing.</span>
               </h2>
               <p className="text-body-lg text-cocoa mb-10 max-w-md">
@@ -63,7 +60,11 @@ export default function Achievements({ data }: { data: Achievement[] }) {
                   transition={{ duration: 0.6, ease, delay: index * 0.08 }}
                 >
                   <span className="font-display text-4xl md:text-5xl text-tangerine block leading-none mb-2">
-                    <CountUp to={counter.to} prefix={counter.prefix} suffix={counter.suffix} />
+                    <CountUp
+                      to={counter.to}
+                      prefix={counter.prefix}
+                      suffix={counter.suffix}
+                    />
                   </span>
                   <span className="text-sm font-medium text-cocoa">
                     {counter.label}
@@ -85,7 +86,10 @@ export default function Achievements({ data }: { data: Achievement[] }) {
             <div className="receipt rounded-t-2xl px-7 py-8 md:px-10 md:py-10 text-[0.8rem] md:text-sm leading-relaxed">
               {/* Header */}
               <div className="text-center mb-6">
-                <p className="font-display not-italic text-2xl md:text-3xl text-ink mb-1 tracking-tight" style={{ fontFamily: "var(--font-fraunces)" }}>
+                <p
+                  className="font-display not-italic text-2xl md:text-3xl text-ink mb-1 tracking-tight"
+                  style={{ fontFamily: "var(--font-fraunces)" }}
+                >
                   SAI AMARTYA B.L.
                 </p>
                 <p className="uppercase tracking-[0.25em] text-[0.65rem] text-cocoa">
@@ -145,12 +149,12 @@ export default function Achievements({ data }: { data: Achievement[] }) {
               </div>
 
               {/* Barcode */}
-              <div className="barcode w-3/4 mx-auto mb-3 opacity-80" />
+              <div className="barcode w-3/4 mx-auto mb-3 opacity-80" aria-hidden />
               <p className="text-center text-[0.65rem] tracking-[0.3em] text-taupe">
                 *** THANK YOU FOR SCROLLING ***
               </p>
             </div>
-            <div className="receipt-tear" />
+            <div className="receipt-tear" aria-hidden />
           </motion.div>
         </div>
       </div>
@@ -158,6 +162,24 @@ export default function Achievements({ data }: { data: Achievement[] }) {
   );
 }
 
+/** useLayoutEffect on the client, useEffect on the server (no SSR warning). */
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+/**
+ * Renders the final value during SSR so the number is correct without
+ * JavaScript, and holds it through hydration. It rewinds to zero only once
+ * matchMedia has explicitly reported no-preference; the count itself then runs
+ * when the section scrolls into view.
+ *
+ * Under `prefers-reduced-motion` there is no rewind at all: the final value
+ * never leaves the screen. Keying the rewind on the preference also means a
+ * counter cannot be stranded on zero if that preference resolves or changes
+ * after a render.
+ *
+ * The number that animates is decorative, so assistive technology is given the
+ * settled value once rather than a stream of intermediate ones.
+ */
 function CountUp({
   to,
   prefix = "",
@@ -169,23 +191,32 @@ function CountUp({
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
-  const [display, setDisplay] = useState(0);
+  const reduceMotion = useReducedMotionPreference();
+  const [display, setDisplay] = useState(to);
+  const finalValue = `${prefix}${to}${suffix}`;
+
+  useIsomorphicLayoutEffect(() => {
+    setDisplay(reduceMotion ? to : 0);
+  }, [reduceMotion, to]);
 
   useEffect(() => {
-    if (!inView) return;
+    if (!inView || reduceMotion) return;
     const controls = animate(0, to, {
       duration: 1.8,
       ease: [0.16, 1, 0.3, 1],
       onUpdate: (v) => setDisplay(Math.round(v)),
     });
     return () => controls.stop();
-  }, [inView, to]);
+  }, [inView, to, reduceMotion]);
 
   return (
     <span ref={ref}>
-      {prefix}
-      {display}
-      {suffix}
+      <span aria-hidden="true">
+        {prefix}
+        {display}
+        {suffix}
+      </span>
+      <span className="sr-only">{finalValue}</span>
     </span>
   );
 }
